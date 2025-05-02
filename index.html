@@ -1,0 +1,254 @@
+<html>
+
+<head>
+  <link href="./css/bootstrap.min.css" rel="stylesheet">
+  <script src="./js/bootstrap.min.js"></script>
+  <style>
+  .icon-container {
+    display: flex;
+    align-items: center;
+    justify-content: center:
+    border: 1px solid #ccc;
+    margin: 10px;
+    cursor: pointer;
+  }
+  .icon-container:hover {
+    background-color: #87d7ff;
+  }
+  .icon {
+    margin: 2px;
+  }
+  input[type=text] {
+    font-family: monospace !important;
+  }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <div class="row mt-3">
+      <div class="col">
+        <fieldset>
+          <legend>Search BI file name</legend>
+          <div class="col">
+            <label for="search" class="form-label">Regexp</label>
+            <input type="text" id="search" class="form-control" placeholder="search icon name..." value=".*">
+          </div>
+        </fieldset>
+      </div>
+      <div class="col">
+        <fieldset>
+          <legend>View options</legend>
+          <div class="row">
+            <div class="col">
+              <label for="width" class="form-label">Width</label>
+              <input type="text" id="width" class="form-control" placeholder="width of icon" value="64">
+            </div>
+            <div class="col">
+              <label for="height" class="form-label">Height</label>
+              <input type="text" id="height" class="form-control" placeholder="height of icon" value="64">
+            </div>
+            <div class="col">
+              <label for="color" class="form-label">Color</label>
+              <input type="text" id="color" class="form-control" placeholder="color of icon" value="#ff0000">
+            </div>
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="show_filename">
+                <label for="show_filename" class="form-check-label">Show file name</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      <div class="col-2">
+        <fieldset>
+          <legend>Copy format</legend>
+          <div class="row">
+            <div class="col">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_png" value="png">
+                <label class="form-check-label" for="option_png">PNG</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_svg" value="svg" checked>
+                <label class="form-check-label" for="option_svg">SVG</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_svg_text" value="svg_text">
+                <label class="form-check-label" for="option_svg_text">SVG(text)</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_jpg" value="jpg">
+                <label class="form-check-label" for="option_jpg">JPG</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+    <div id="result" class="row mt-5">
+    </div>
+  </div>
+</body>
+
+<script>
+async function load_icon_names() {
+  try {
+    const response = await fetch('./bootstrap-icon-list.txt');
+  
+    if (!response.ok) {
+      throw new Error(`HTTP error status: ${response.status}`);
+    }
+
+    const text = await response.text();
+  
+    return text;
+  } catch(error) {
+    console.error(e);
+  }
+}
+
+function create_template(data, w, h, m, color) {
+  const t = document.createElement('template');
+  const cw = w*1.1;
+  const ch = h*1.1;
+  const bidata = 'bi-' + data.replace(/\.svg/g, '');
+  t.innerHTML = `
+  <div class="col" style="width: ${cw} height: ${ch}">
+    <div class="row">
+      <div class="col icon-container" title="Click to copy icon">
+        <img class="icon" style="margin: ${m}" src="icons/bootstrap-icons-1.9.1/${data}" width="${w}" height="${h}">
+        <!-- <svg class="bi ${bidata}" width="${w}" height="${h}" fill="${color}" xmlns="http://www.w3.org/2000/svg"></svg> -->
+      </div>
+      <div class="col">
+        <small class="filename text-muted" style="font-family: monospace"></small>
+      </div>
+      <div class="col">
+        <small class="message text-success"></small>
+      </div>
+    </div>
+  </div>`
+  ;
+  return t.content;
+}
+
+function draw_icons(icon_names) {
+    let pa = document.getElementById("result");
+    let w = document.getElementById("width").value;
+    let h = document.getElementById("height").value;
+    let color = document.getElementById("color").value;
+    let show_fn = document.getElementById("show_filename").checked;
+    let m = 5;
+    
+    pa.replaceChildren();
+
+    let q = document.getElementById("search").value;
+    let result = icon_names.filter((n) => n.match(q));
+
+    result.forEach((r) => {
+      let t = create_template(r, w, h, m, color);
+      const fn = t.querySelector('.filename');
+      if (show_fn) {
+        fn.innerText = r;
+        fn.style.visibility = 'visible';
+      } else {
+        fn.style.visibility = 'hidden';
+      }
+      const ic = t.querySelector('.icon-container');
+      ic.onclick = (e) => {
+        let c = e.currentTarget;
+        copy_icon(c.parentElement);
+      };
+      pa.appendChild(t);
+    });
+}
+
+function get_image_format() {
+  const g = document.getElementsByName('image_format');
+  for (let i=0; i<g.length; i++) {
+    if (g[i].checked)
+    return g[i].value;
+  }
+  return null;
+}
+
+function copy_icon_as_svg_text(url, message) {
+  fetch(url)
+  .then(response => response.text())
+  .then(svg_text => {
+    navigator.clipboard.writeText(svg_text)
+    .then(() => {
+      message.textContent = 'Image copied to clipboard';
+      setTimeout(() => {
+        message.textContent = '';
+      }, 3000);
+    })
+    .catch((err) => {
+      message.textContent = 'Failed to copy image: ' + err.message;
+      console.error('Failed to copy image: ', err);
+    });
+  });
+}
+
+function copy_icon_as_image(img, message, format) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+
+  canvas.toBlob(blob => {
+    const data = [new ClipboardItem({ [blob.type]: blob })];
+    navigator.clipboard.write(data).then(() => {
+      message.textContent = 'Image copied to clipboard';
+      setTimeout(() => {
+        message.textContent = '';
+      }, 3000);
+    }).catch(err => {
+      message.textContent = 'Failed to copy image: ' + err.message;
+      console.error('Failed to copy image: ', err);
+    })
+  }, `image/${format}`);
+}
+
+function copy_icon(c) {
+  const format = get_image_format();
+
+  if (format == 'svg_text') 
+    copy_icon_as_svg_text(c.querySelector('img').getAttribute('src'), c.querySelector('.message'));
+  else
+    copy_icon_as_image(c.querySelector('img'), c.querySelector('.message'), format);
+}
+
+function main() {
+  var icon_names = null;
+
+  load_icon_names().then(
+    text => {
+      icon_names = text.split('\n');
+      <!-- console.log(text); -->
+    }
+  );
+
+  let search = document.getElementById('search');
+  let elms = ['search', 'width', 'height', 'color', 'show_filename'].map((i) => document.getElementById(i));
+  for (let i of elms) {
+    i.onchange = (event) => {
+      draw_icons(icon_names);
+    }
+  }
+  elms[0].focus();
+
+  <!-- let containers = document.querySelectorAll('icon-container'); -->
+  <!-- containers.forEach((c) => { -->
+    <!-- copy_icon(c.querySelector('img'), c.querySelector('message')); -->
+  <!-- }) -->
+  <!-- console.log(icon_names); -->
+
+}
+
+document.addEventListener('DOMContentLoaded', main);
+
+</script>
+</html>
