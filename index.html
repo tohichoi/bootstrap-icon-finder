@@ -1,22 +1,26 @@
 <html>
 
 <head>
+  <title>Bootstrap Icon Search</title>
   <link href="./css/bootstrap.min.css" rel="stylesheet">
+  <link href="./icons/bootstrap-icons-1.9.1/bootstrap-icons.css" rel="stylesheet">
   <script src="./js/bootstrap.min.js"></script>
   <style>
   .icon-container {
     display: flex;
     align-items: center;
-    justify-content: center:
+    justify-content: center;
     border: 1px solid #ccc;
     margin: 10px;
     cursor: pointer;
   }
   .icon-container:hover {
     background-color: #87d7ff;
+    <!-- margin: 5px; -->
   }
   .icon {
-    margin: 2px;
+    // set from user interface
+    // margin: 2px;
   }
   input[type=text] {
     font-family: monospace !important;
@@ -31,7 +35,7 @@
         <fieldset>
           <legend>Search BI file name</legend>
           <div class="col">
-            <label for="search" class="form-label">Regexp</label>
+            <label for="search" class="form-label">Regular expression</label>
             <input type="text" id="search" class="form-control" placeholder="search icon name..." value=".*">
           </div>
         </fieldset>
@@ -41,17 +45,17 @@
           <legend>View options</legend>
           <div class="row">
             <div class="col">
-              <label for="width" class="form-label">Width</label>
-              <input type="text" id="width" class="form-control" placeholder="width of icon" value="64">
+              <label for="width" class="form-label">Icon size(px)</label>
+              <input type="text" id="width" class="form-control" placeholder="size of icon" value="128">
             </div>
             <div class="col">
-              <label for="height" class="form-label">Height</label>
-              <input type="text" id="height" class="form-control" placeholder="height of icon" value="64">
+              <label for="max_draw_icons" class="form-label">Show results up to ...</label>
+              <input type="number" id="max_draw_icons" class="form-control" placeholder="maximum number of icons" value="100">
             </div>
-            <div class="col">
-              <label for="color" class="form-label">Color</label>
-              <input type="text" id="color" class="form-control" placeholder="color of icon" value="#ff0000">
-            </div>
+            <!-- <div class="col"> -->
+              <!-- <label for="color" class="form-label">Color</label> -->
+              <!-- <input type="text" id="color" class="form-control" placeholder="color of icon" value="#ff0000"> -->
+            <!-- </div> -->
             <div class="col">
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" id="show_filename">
@@ -87,7 +91,11 @@
         </fieldset>
       </div>
     </div>
-    <div id="result" class="row mt-5">
+    <div class="row">
+      <div class="col" id="search_result" >
+      </div>
+    </div>
+    <div class="row justify-content-center align-items-begin" style="min-height: 100px;" id="result">
     </div>
   </div>
 </body>
@@ -118,13 +126,13 @@ function create_template(data, w, h, m, color) {
   <div class="col" style="width: ${cw} height: ${ch}">
     <div class="row">
       <div class="col icon-container" title="Click to copy icon">
-        <img class="icon" style="margin: ${m}" src="icons/bootstrap-icons-1.9.1/${data}" width="${w}" height="${h}">
+        <img class="icon m-3" style="margin: ${m}" src="icons/bootstrap-icons-1.9.1/${data}" width="${w}" height="${h}">
         <!-- <svg class="bi ${bidata}" width="${w}" height="${h}" fill="${color}" xmlns="http://www.w3.org/2000/svg"></svg> -->
       </div>
-      <div class="col">
+      <div class="row-cols-1">
         <small class="filename text-muted" style="font-family: monospace"></small>
       </div>
-      <div class="col">
+      <div class="row-cols-1">
         <small class="message text-success"></small>
       </div>
     </div>
@@ -136,16 +144,33 @@ function create_template(data, w, h, m, color) {
 function draw_icons(icon_names) {
     let pa = document.getElementById("result");
     let w = document.getElementById("width").value;
-    let h = document.getElementById("height").value;
-    let color = document.getElementById("color").value;
+    let sr = document.getElementById('search_result');
+    <!-- let h = document.getElementById("height").value; -->
+    let h = w;
+    <!-- let color = document.getElementById("color").value; -->
+    let color = null;
     let show_fn = document.getElementById("show_filename").checked;
     let m = 5;
+    let max_draw_icons = parseInt(document.getElementById("max_draw_icons").value) || 0;
     
     pa.replaceChildren();
+    sr.replaceChildren();
 
-    let q = document.getElementById("search").value;
+    let q = document.getElementById("search").value.trim() || ".*";
     let result = icon_names.filter((n) => n.match(q));
-
+    
+    if (max_draw_icons > 0 && max_draw_icons < result.length)
+      result = result.slice(0, max_draw_icons);
+      
+    if (result.length === 0) {
+      let t = document.createElement('template');
+      t.innerHTML = '<i class="bi bi-exclamation-square-fill" style="color: rgb(255, 0, 0);"></i> No result';
+      sr.appendChild(t.content);
+      return;
+    } else {
+      sr.innerText = `Matched ${(Intl.NumberFormat('ko-KR')).format(result.length)} icon(s)`;
+    }
+    
     result.forEach((r) => {
       let t = create_template(r, w, h, m, color);
       const fn = t.querySelector('.filename');
@@ -179,7 +204,7 @@ function copy_icon_as_svg_text(url, message) {
   .then(svg_text => {
     navigator.clipboard.writeText(svg_text)
     .then(() => {
-      message.textContent = 'Image copied to clipboard';
+      message.textContent = '✅ Image copied to clipboard';
       setTimeout(() => {
         message.textContent = '';
       }, 3000);
@@ -221,25 +246,42 @@ function copy_icon(c) {
     copy_icon_as_image(c.querySelector('img'), c.querySelector('.message'), format);
 }
 
+function build_icon_name_vector(icon_names) {
+  // split '-'
+  let names = icon_names.map(i => i.split('.')[0]);
+  let vector = new Map();
+  for (const name of names) {
+    if (name.length < 1)
+      continue;
+    for (const word of name.split('-')) {
+      vector.set(word, (vector.get(word) || 0) + 1);
+    }
+  }
+  return Object.fromEntries(vector);
+}
+
 function main() {
   var icon_names = null;
-
+  var icon_name_vector = null;
+  let search = document.getElementById('search');
+  
   load_icon_names().then(
     text => {
       icon_names = text.split('\n');
-      <!-- console.log(text); -->
+      draw_icons(icon_names);
+      <!-- icon_name_vector = build_icon_name_vector(icon_names); -->
+      <!-- console.log(icon_name_vector); -->
     }
   );
-
-  let search = document.getElementById('search');
-  let elms = ['search', 'width', 'height', 'color', 'show_filename'].map((i) => document.getElementById(i));
+  
+  let elms = ['search', 'max_draw_icons', 'width', 'show_filename'].map((i) => document.getElementById(i));
   for (let i of elms) {
     i.onchange = (event) => {
       draw_icons(icon_names);
     }
   }
-  elms[0].focus();
-
+  search.focus();
+  
   <!-- let containers = document.querySelectorAll('icon-container'); -->
   <!-- containers.forEach((c) => { -->
     <!-- copy_icon(c.querySelector('img'), c.querySelector('message')); -->
