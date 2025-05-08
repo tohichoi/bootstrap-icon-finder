@@ -1,0 +1,6 @@
+icons/fontawesome
+config.toml
+cert/*.pem
+cert/*.crt
+cert/*.csr
+cert/openssl-ip.conf
