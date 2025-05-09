@@ -1,0 +1,41 @@
+
+/* Custom styles for the sidebar */
+.sidebar {
+    height: 100vh; /* Full height */
+    background-color: #f8f9fa; /* Light background */
+    border-right: 1px solid #e0e0e0; /* Add a border */
+    /* padding-top: 70px; */ /* Add padding at the top for fixed navbar */
+    position: fixed; /* Make it fixed */
+    top: 0;
+    left: 0;
+    overflow-x: hidden; /* Prevent horizontal scrollbar */
+    width: 250px; /* Set the width of the sidebar */
+}
+.sidebar .nav-link {
+    /* padding: 10px 16px; */
+    /* font-size: 16px; */
+    color: #343a40; /* Darker text */
+}
+.sidebar .nav-link:hover, .sidebar .nav-link.active {
+    background-color: #e9ecef; /* Slightly darker hover/active background */
+    color: #007bff; /* Highlighted text color */
+}
+.sidebar .nav-item {
+    /* margin-bottom: 5px; */ /* Add some space between items */
+}
+
+/* Styles for the main content area */
+.main-content {
+    margin-left: 250px; /* Leave space for the sidebar */
+    padding: 20px;
+}
+
+/* Navbar Styling (optional, for fixed top navigation) */
+.navbar {
+    background-color: #ffffff; /* White navbar */
+    border-bottom: 1px solid #e0e0e0;
+    position: fixed; /* Fix navbar to the top */
+    top: 0;
+    width: 100%;
+    z-index: 1000; /* Ensure navbar is above other elements */
+}

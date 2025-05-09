@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>입력 기록 관리 라이브러리</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            background-color: #f8f9fa;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: #ffffff;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            color: #343a40;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 1px solid #ced4da;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+        }
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+        }
+        .history-list {
+            list-style: none;
+            padding: 0;
+            margin-top: 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 5px;
+            background-color: #f5f5f5;
+        }
+        .history-list li {
+            padding: 12px 15px;
+            border-bottom: 1px solid #e0e0e0;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        .history-list li:last-child {
+            border-bottom: none;
+        }
+        .history-list li:hover {
+            background-color: #dcdcdc;
+        }
+        .history-list li.selected {
+            background-color: #007bff;
+            color: white;
+        }
+        .save-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            background-color: #007bff;
+            color: white;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+            margin-top: 10px;
+        }
+        .save-button:hover {
+            background-color: #0056b3;
+        }
+        .save-button:disabled {
+            background-color: #b0b0b0;
+            cursor: not-allowed;
+        }
+        .message {
+            color: red;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>입력 기록 관리</h1>
+        <input type="text" id="textInput" placeholder="텍스트를 입력하세요">
+        <ul id="historyList" class="history-list"></ul>
+        <button id="saveButton" class="save-button">저장</button>
+        <p id="message" class="message"></p>
+    </div>
+
+    <script>
+        /**
+         * InputHistoryManager 클래스
+         * - 입력 필드의 입력 기록을 관리하고 표시하는 기능을 제공합니다.
+         */
+        class InputHistoryManager {
+            /**
+             * @param {string} inputId - 입력 필드의 ID.
+             * @param {string} historyListId - 기록 목록을 표시할 요소의 ID.
+             * @param {string} saveButtonId - 저장 버튼의 ID.
+             * @param {string} messageId - 메시지를 표시할 요소의 ID. (선택적)
+             * @param {number} maxHistoryLength - 최대 저장 가능한 기록 개수. (선택적, 기본값: 5)
+             * @param {string} storageKey - 로컬 스토리지에 저장할 키. (선택적, 기본값: 'inputHistory')
+             */
+            constructor(inputId, historyListId, saveButtonId, messageId = null, maxHistoryLength = 5, storageKey = 'bootstrap-icon-finder.search_history') {
+                this.inputElement = document.getElementById(inputId);
+                this.historyListElement = document.getElementById(historyListId);
+                this.saveButtonElement = document.getElementById(saveButtonId);
+                this.messageElement = messageId ? document.getElementById(messageId) : null;
+                this.maxHistoryLength = maxHistoryLength;
+                this.storageKey = storageKey;
+                this.history = [];
+                this.init();
+            }
+
+            /**
+             * 초기화 함수
+             * - 로컬 스토리지에서 기록을 불러오고, 이벤트 리스너를 설정합니다.
+             */
+            init() {
+                this.loadHistory();
+                this.bindEvents();
+                this.displayHistory(); // 초기 로드 시 기록 표시
+            }
+
+            /**
+             * 로컬 스토리지에서 기록을 불러오는 함수
+             */
+            loadHistory() {
+                if (localStorage.getItem(this.storageKey)) {
+                    try {
+                        this.history = JSON.parse(localStorage.getItem(this.storageKey));
+                        if (!Array.isArray(this.history)) {
+                            this.history = [];
+                            localStorage.removeItem(this.storageKey);
+                            console.warn('잘못된 형식의 기록 데이터를 삭제했습니다.');
+                        }
+                    } catch (e) {
+                        console.error("로컬 스토리지에서 기록을 불러오는 중 오류 발생:", e);
+                        this.history = [];
+                        localStorage.removeItem(this.storageKey);
+                    }
+                }
+            }
+
+            /**
+             * 입력 기록을 로컬 스토리지에 저장하는 함수
+             */
+            saveHistory() {
+                localStorage.setItem(this.storageKey, JSON.stringify(this.history));
+            }
+
+            /**
+             * 입력 기록을 화면에 표시하는 함수
+             */
+            displayHistory() {
+                this.historyListElement.innerHTML = '';
+                this.history.forEach(item => {
+                    const li = document.createElement('li');
+                    li.textContent = item;
+                    li.addEventListener('click', () => this.onHistoryItemClick(item));
+                    this.historyListElement.appendChild(li);
+                });
+                this.saveButtonElement.disabled = this.history.length >= this.maxHistoryLength;
+                if (this.messageElement) {
+                    this.messageElement.textContent = this.history.length >= this.maxHistoryLength
+                        ? `최대 ${this.maxHistoryLength}개까지 저장할 수 있습니다.`
+                        : '';
+                }
+            }
+
+            /**
+             * 기록 아이템 클릭 시 처리하는 함수
+             * @param {string} item - 클릭된 기록 아이템의 텍스트.
+             */
+             onHistoryItemClick(item) {
+                this.inputElement.value = item;
+                const selectedItem = this.historyListElement.querySelector('.selected');
+                if (selectedItem) {
+                    selectedItem.classList.remove('selected');
+                }
+                const clickedItem = Array.from(this.historyListElement.children).find(li => li.textContent === item);
+                if (clickedItem) {
+                    clickedItem.classList.add('selected');
+                }
+            }
+
+            /**
+             * 이벤트 리스너를 설정하는 함수
+             */
+            bindEvents() {
+                this.saveButtonElement.addEventListener('click', () => this.onSaveButtonClick());
+            }
+
+            /**
+             * 저장 버튼 클릭 시 처리하는 함수
+             */
+            onSaveButtonClick() {
+                const inputText = this.inputElement.value.trim();
+                if (inputText !== '') {
+                    this.history.unshift(inputText);
+                    if (this.history.length > this.maxHistoryLength) {
+                        this.history.pop();
+                    }
+                    this.saveHistory();
+                    this.inputElement.value = '';
+                    this.displayHistory();
+                }
+            }
+        }
+
+        // 사용 예시
+        const inputHistoryManager = new InputHistoryManager('textInput', 'historyList', 'saveButton', 'message', 5);
+    </script>
+</body>
+</html>
