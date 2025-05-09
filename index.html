@@ -2,50 +2,43 @@
 
 <head>
   <title>Bootstrap/FontAwesome Icon Search</title>
+
   <!-- bootstrap -->
-  <link href="./css/bootstrap.min.css" rel="stylesheet">
+  <link href="./css/bootstrap/bootstrap.min.css" rel="stylesheet">
+  <link href="./css/bootstrap-icon-finder/common.css" rel="stylesheet">
+  <link href="./css/bootstrap-icon-finder/sidebar.css" rel="stylesheet">
   <link href="./icons/bootstrap-icons-1.9.1/bootstrap-icons.css" rel="stylesheet">
-  <script src="./js/bootstrap.min.js"></script>
 
   <!-- fontawesome -->
   <link href="./icons/fontawesome-free-6.7.2-web/css/all.css" rel="stylesheet">
   <link href="./icons/bootstrap-icons-1.9.1/bootstrap-icons.css" rel="stylesheet">
-  
+
+  <!-- js -->
+  <script src="./js/bootstrap.min.js"></script>
+  <script src="./js/input_history_manager.js"></script>
+
   <style>
-  .icon-container {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 1px solid #ccc;
-    margin: 10px;
-    cursor: pointer;
-  }
-  .icon-container:hover {
-    background-color: #87d7ff;
-    /* margin: 5px; */
-  }
-  .icon {
-    /* set from user interface
-    margin: 2px; */
-  }
-  input[type=text] {
-    font-family: monospace !important;
-  }
-  input[type=number] {
-    font-family: monospace !important;
-  }
   </style>
 </head>
 
 <body>
   <div class="container">
+    <!-- BEGIN: 검색 -->
     <div class="row mt-3">
       <div class="col">
         <fieldset>
           <legend>Search file name</legend>
           <div class="col">
             <label for="search" class="form-label">Regular expression</label>
-            <input type="text" id="search" class="form-control" placeholder="search icon name..." value="">
+            <div class="row">
+              <div class="col">
+                <input type="text" id="search" class="form-control" placeholder="search icon name..." value="">
+              </div>
+              <div class="col-auto">
+                <input type="button" id="search_history_button" class="btn btn-outline-secondary form-control" value="⌛" 
+                  data-bs-toggle="modal" data-bs-target="#search_history">
+              </div>
+            </div>
           </div>
         </fieldset>
       </div>
@@ -100,14 +93,57 @@
         </fieldset>
       </div>
     </div>
+    <!-- END: 검색 -->
+
+    <!-- BEGIN: 검색 결과 요약 -->
     <div class="row">
       <div class="col" id="search_result" >
       </div>
     </div>
+    <!-- END: 검색 결과 요약 -->
+
+    <!-- BEGIN: 검색 결과 -->
     <div class="row justify-content-center align-items-begin" style="min-height: 100px;" id="result">
     </div>
+    <!-- END: 검색 결과 -->
+
+    <!-- BEGIN: 검색 이력 모달 -->
+    <div class="modal fade" role="dialog" id="search_history" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">검색 이력</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#search_history"></button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              <li>검색형식1: <b>keyword:검색어1 검색어2</b></li>
+              <ul>
+                <li>keyword: <b>title</b>, <b>code</b>, <b>department</b>, <b>memo</b>, <b>regex</b>, <b>classified</b></li>
+                <li class="font-monospace">title:해외 학회</li>
+                <li class="font-monospace">code:동연 22 12</li>
+                <li class="font-monospace">department:101 105</li>
+                <li class="font-monospace">memo:PC 노트</li>
+                <li class="font-monospace">regex:(국내|해외)[ ]*학회</li>
+                <li class="font-monospace">classified:t</li>
+                <li class="font-monospace">classified:f</li>
+              </ul>
+              <li>검색형식2: <b>검색어1 검색어2 ...</b></li>
+              <ul>
+                <li><b>제목</b>, <b>등록번호</b>, <b>메모</b>에서 검색(단어 순서와 무관한 <b>AND</b>)</li>
+              </ul>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#search_history">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: 검색 이력 -->
   </div>
 </body>
+
 
 <script>
 async function load_icon_names(filelist) {
@@ -239,7 +275,7 @@ function draw_icons(icon_names) {
     let result = icon_names.filter((n) => {
       let path = split_path(n);
       let m = path.name.match(q);
-      console.log(path, m);
+      // console.log(path, m);
       return m;
       }
     );
@@ -351,6 +387,16 @@ function build_icon_name_vector(icon_names) {
 }
 
 
+function add_event_handlers() {
+  // search history
+  // let b = document.getElementById('search_history_button');
+  // b.setAttribute('data-bs-toggle', 'modal');
+  // b.setAttribute('data-bs-target', '#search_history');
+  // b.onclick = (e) => {
+  //   const modal = new bootstrap.Modal(document.getElementById('search_history'));
+  // }
+}
+
 async function main() {
   var icon_name_vector = null;
   let search = document.getElementById('search');
@@ -365,8 +411,12 @@ async function main() {
       draw_icons(icon_names);
     }
   }
+  add_event_handlers();
+
   search.focus();
 }
+
+const inputHistoryManager = new InputHistoryManager('search', 'historyList', 'saveButton', 'message', 5);
 
 document.addEventListener('DOMContentLoaded', main);
 
