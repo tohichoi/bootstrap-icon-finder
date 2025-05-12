@@ -1,0 +1,5 @@
+ip='1.1.1.1'
+port=11000
+certfile='cert/bootstrap-icon-finder.crt'
+keyfile='cert/bootstrap-icon-finder-nopass.pem'
+

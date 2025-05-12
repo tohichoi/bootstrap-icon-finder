@@ -1,0 +1,424 @@
+<html>
+
+<head>
+  <title>Bootstrap/FontAwesome Icon Search</title>
+
+  <!-- bootstrap -->
+  <link href="./css/bootstrap/bootstrap.min.css" rel="stylesheet">
+  <link href="./css/bootstrap-icon-finder/common.css" rel="stylesheet">
+  <link href="./css/bootstrap-icon-finder/sidebar.css" rel="stylesheet">
+  <link href="./icons/bootstrap-icons-1.9.1/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- fontawesome -->
+  <link href="./icons/fontawesome-free-6.7.2-web/css/all.css" rel="stylesheet">
+  <link href="./icons/bootstrap-icons-1.9.1/bootstrap-icons.css" rel="stylesheet">
+
+  <!-- js -->
+  <script src="./js/bootstrap.min.js"></script>
+  <script src="./js/input_history_manager.js"></script>
+
+  <style>
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <!-- BEGIN: 검색 -->
+    <div class="row mt-3">
+      <div class="col">
+        <fieldset>
+          <legend>Search file name</legend>
+          <div class="col">
+            <label for="search" class="form-label">Regular expression</label>
+            <div class="row">
+              <div class="col">
+                <input type="text" id="search" class="form-control" placeholder="search icon name..." value="">
+              </div>
+              <div class="col-auto">
+                <input type="button" id="search_history_button" class="btn btn-outline-secondary form-control" value="⌛" 
+                  data-bs-toggle="modal" data-bs-target="#search_history">
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      <div class="col">
+        <fieldset>
+          <legend>View options</legend>
+          <div class="row">
+            <div class="col">
+              <label for="width" class="form-label">Icon size(px)</label>
+              <input type="text" id="width" class="form-control" placeholder="size of icon" value="128">
+            </div>
+            <div class="col">
+              <label for="max_draw_icons" class="form-label">Show results up to ...</label>
+              <input type="number" id="max_draw_icons" class="form-control" placeholder="maximum number of icons" value="100">
+            </div>
+            <!-- <div class="col"> -->
+              <!-- <label for="color" class="form-label">Color</label> -->
+              <!-- <input type="text" id="color" class="form-control" placeholder="color of icon" value="#ff0000"> -->
+            <!-- </div> -->
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="show_filename">
+                <label for="show_filename" class="form-check-label">Show file name</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+      <div class="col-2">
+        <fieldset>
+          <legend>Copy format</legend>
+          <div class="row">
+            <div class="col">
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_png" value="png">
+                <label class="form-check-label" for="option_png">PNG</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_svg" value="svg" checked>
+                <label class="form-check-label" for="option_svg">SVG</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_svg_text" value="svg_text">
+                <label class="form-check-label" for="option_svg_text">SVG(text)</label>
+              </div>
+              <div class="form-check">
+                <input class="form-check-input" type="radio" name="image_format" id="option_jpg" value="jpg">
+                <label class="form-check-label" for="option_jpg">JPG</label>
+              </div>
+            </div>
+          </div>
+        </fieldset>
+      </div>
+    </div>
+    <!-- END: 검색 -->
+
+    <!-- BEGIN: 검색 결과 요약 -->
+    <div class="row">
+      <div class="col" id="search_result" >
+      </div>
+    </div>
+    <!-- END: 검색 결과 요약 -->
+
+    <!-- BEGIN: 검색 결과 -->
+    <div class="row justify-content-center align-items-begin" style="min-height: 100px;" id="result">
+    </div>
+    <!-- END: 검색 결과 -->
+
+    <!-- BEGIN: 검색 이력 모달 -->
+    <div class="modal fade" role="dialog" id="search_history" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">검색 이력</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#search_history"></button>
+          </div>
+          <div class="modal-body">
+            <ul>
+              <li>검색형식1: <b>keyword:검색어1 검색어2</b></li>
+              <ul>
+                <li>keyword: <b>title</b>, <b>code</b>, <b>department</b>, <b>memo</b>, <b>regex</b>, <b>classified</b></li>
+                <li class="font-monospace">title:해외 학회</li>
+                <li class="font-monospace">code:동연 22 12</li>
+                <li class="font-monospace">department:101 105</li>
+                <li class="font-monospace">memo:PC 노트</li>
+                <li class="font-monospace">regex:(국내|해외)[ ]*학회</li>
+                <li class="font-monospace">classified:t</li>
+                <li class="font-monospace">classified:f</li>
+              </ul>
+              <li>검색형식2: <b>검색어1 검색어2 ...</b></li>
+              <ul>
+                <li><b>제목</b>, <b>등록번호</b>, <b>메모</b>에서 검색(단어 순서와 무관한 <b>AND</b>)</li>
+              </ul>
+            </ul>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#search_history">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: 검색 이력 -->
+  </div>
+</body>
+
+
+<script>
+async function load_icon_names(filelist) {
+  try {
+    const response = await fetch(filelist);
+    if (!response.ok) {
+      throw new Error(`HTTP error status: ${response.status}`);
+    }
+    const text = await response.text();
+    return text;
+  } catch(error) {
+    console.error(error);
+  }
+}
+
+
+async function load_all_icon_names() {
+  try {
+    let all_icons_names = [];
+    let icon_list = ['./bootstrap-icon-list.txt', 'fontawesome-icon-list.txt'];
+    
+    for (const l of icon_list) {
+    // ['./test-icon-list.txt'].forEach(l => {
+      const text = await load_icon_names(l);
+      if (!text) {
+        throw new Error(`Cannot load icons ${l}`);
+      }
+      icon_names = text.split('\n').filter(t => t.length > 0);
+      all_icons_names.push(...icon_names.map(e => e.trim()));
+    };
+
+    return all_icons_names;
+  } catch(error) {
+    console.error(error);
+  }
+}
+
+
+function get_prefix(data) {
+  if (data.indexOf('bootstrap') >= 0)
+    return 'bi';
+  else if (data.indexOf('fontawesome') >= 0)
+    return 'fa';
+  return null;
+}
+
+
+function get_vendor(icon_prefix) {
+  if (icon_prefix === 'bi')
+    return 'bi-bootstrap-fill';
+  else if (icon_prefix === 'fa')
+    return 'fa-brands fa-square-font-awesome';
+  return null;
+}
+
+
+function get_vendor_color(icon_prefix) {
+  if (icon_prefix === 'bi')
+    return '#6d2bf2';
+  else if (icon_prefix === 'fa')
+    return '#538dd7';
+  return '#000000';
+}
+
+
+function create_template(data, w, h, m, color) {
+  const t = document.createElement('template');
+  const cw = w*1.1;
+  const ch = h*1.1;
+  const path = split_path(data);
+  const icon_prefix = get_prefix(data);
+  const icon_vendor = get_vendor(icon_prefix);
+  const icon_vendor_color = get_vendor_color(icon_prefix);
+  const bidata = icon_prefix + '-' + path.name.replace(/\.svg/g, '');
+  t.innerHTML = `
+  <div class="col" style="width: ${cw} height: ${ch}">
+    <div class="row">
+      <div class="col icon-container position-relative" title="Click to copy icon">
+        <i class="${icon_prefix} ${icon_vendor}" style="position:absolute; top:0; left:0; pointer-events: none; font-size: 20px; color: ${icon_vendor_color}"></i>
+        <img class="icon m-3" style="margin: ${m}" src="${data}" width="${w}" height="${h}">
+        <!-- <svg class="${icon_prefix} ${bidata}" width="${w}" height="${h}" fill="${color}" xmlns="http://www.w3.org/2000/svg"></svg> -->
+      </div>
+      <div class="row-cols-1">
+        <a href="${data}" class="text-decoration-none">
+          <!-- <i class="bi bi-download"></i> -->
+          <small class="filename text-muted" style="font-family: monospace"></small>
+        </a>
+      </div>
+      <div class="row-cols-1">
+        <small class="message text-success"></small>
+      </div>
+    </div>
+  </div>`
+  ;
+  return t.content;
+}
+
+
+function split_path(p) {
+  let re = /^(.*[\\/])?([^\\/]+)$/;
+  let m = p.match(re);
+  if (m) {
+    const path = m[1];
+    const name = m[2];
+    return { path, name };
+  } else {
+    return { path: '', name: p };
+  }
+}
+
+
+function draw_icons(icon_names) {
+    let pa = document.getElementById("result");
+    let w = document.getElementById("width").value;
+    let sr = document.getElementById('search_result');
+    /* let h = document.getElementById("height").value; */
+    let h = w;
+    /* let color = document.getElementById("color").value; */
+    let color = null;
+    let show_fn = document.getElementById("show_filename").checked;
+    let m = 5;
+    let max_draw_icons = parseInt(document.getElementById("max_draw_icons").value) || 0;
+    
+    pa.replaceChildren();
+    sr.replaceChildren();
+
+    let q = document.getElementById("search").value.toLowerCase().trim() || ".+";
+
+    let result = icon_names.filter((n) => {
+      let path = split_path(n);
+      let m = path.name.match(q);
+      // console.log(path, m);
+      return m;
+      }
+    );
+    
+    if (max_draw_icons > 0 && max_draw_icons < result.length)
+      result = result.slice(0, max_draw_icons);
+      
+    if (result.length === 0) {
+      let t = document.createElement('template');
+      t.innerHTML = '<i class="bi bi-exclamation-square-fill" style="color: rgb(255, 0, 0);"></i> No result';
+      sr.appendChild(t.content);
+      return;
+    } else {
+      sr.innerText = `Matched ${(Intl.NumberFormat('ko-KR')).format(result.length)} icon(s)`;
+    }
+    
+    result.forEach((r) => {
+      let t = create_template(r, w, h, m, color);
+      const fn = t.querySelector('.filename');
+      if (show_fn) {
+        fn.innerText = r;
+        fn.style.visibility = 'visible';
+      } else {
+        fn.style.visibility = 'hidden';
+      }
+      const ic = t.querySelector('.icon-container');
+      ic.onclick = (e) => {
+        let c = e.currentTarget;
+        copy_icon(c.parentElement);
+      };
+      pa.appendChild(t);
+    });
+}
+
+
+function get_image_format() {
+  const g = document.getElementsByName('image_format');
+  for (let i=0; i<g.length; i++) {
+    if (g[i].checked)
+    return g[i].value;
+  }
+  return null;
+}
+
+
+function copy_icon_as_svg_text(url, message) {
+  fetch(url)
+  .then(response => response.text())
+  .then(svg_text => {
+    navigator.clipboard.writeText(svg_text)
+    .then(() => {
+      message.textContent = '✅ Image copied to clipboard';
+      setTimeout(() => {
+        message.textContent = '';
+      }, 3000);
+    })
+    .catch((err) => {
+      message.textContent = 'Failed to copy image: ' + err.message;
+      console.error('Failed to copy image: ', err);
+    });
+  });
+}
+
+
+function copy_icon_as_image(img, message, format) {
+  const canvas = document.createElement('canvas');
+  const ctx = canvas.getContext('2d');
+  canvas.width = img.width;
+  canvas.height = img.height;
+  ctx.drawImage(img, 0, 0, img.width, img.height);
+
+  canvas.toBlob(blob => {
+    const data = [new ClipboardItem({ [blob.type]: blob })];
+    navigator.clipboard.write(data).then(() => {
+      message.textContent = '✅ Image copied to clipboard';
+      setTimeout(() => {
+        message.textContent = '';
+      }, 3000);
+    }).catch(err => {
+      message.textContent = 'Failed to copy image: ' + err.message;
+      console.error('Failed to copy image: ', err);
+    })
+  }, `image/${format}`);
+}
+
+
+function copy_icon(c) {
+  const format = get_image_format();
+
+  if (format == 'svg_text') 
+    copy_icon_as_svg_text(c.querySelector('img').getAttribute('src'), c.querySelector('.message'));
+  else
+    copy_icon_as_image(c.querySelector('img'), c.querySelector('.message'), format);
+}
+
+
+function build_icon_name_vector(icon_names) {
+  // split '-'
+  let names = icon_names.map(i => i.split('.')[0]);
+  let vector = new Map();
+  for (const name of names) {
+    if (name.length < 1)
+      continue;
+    for (const word of name.split('-')) {
+      vector.set(word, (vector.get(word) || 0) + 1);
+    }
+  }
+  return Object.fromEntries(vector);
+}
+
+
+function add_event_handlers() {
+  // search history
+  // let b = document.getElementById('search_history_button');
+  // b.setAttribute('data-bs-toggle', 'modal');
+  // b.setAttribute('data-bs-target', '#search_history');
+  // b.onclick = (e) => {
+  //   const modal = new bootstrap.Modal(document.getElementById('search_history'));
+  // }
+}
+
+async function main() {
+  var icon_name_vector = null;
+  let search = document.getElementById('search');
+  let icon_names = await load_all_icon_names();
+  if (icon_names) {
+    draw_icons(icon_names);
+  }
+
+  let elms = ['search', 'max_draw_icons', 'width', 'show_filename'].map((i) => document.getElementById(i));
+  for (let i of elms) {
+    i.onchange = (event) => {
+      draw_icons(icon_names);
+    }
+  }
+  add_event_handlers();
+
+  search.focus();
+}
+
+//const inputHistoryManager = new InputHistoryManager('search', 'historyList', 'saveButton', 'message', 5);
+
+document.addEventListener('DOMContentLoaded', main);
+
+</script>
+</html>
