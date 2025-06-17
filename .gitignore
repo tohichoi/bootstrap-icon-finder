@@ -10,3 +10,6 @@ icons/fontawesome
 icons/fontawesome-free-6.7.2-web
 css/bootstrap
 css/fontawesome
+__pycache__
+data/
+venv

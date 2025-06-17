@@ -1,0 +1,143 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 20px;
+    background-color: #f8f9fa;
+    color: #333;
+}
+
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #0056b3;
+    text-align: center;
+    margin-bottom: 30px;
+}
+
+/* 트리 구조 스타일 */
+.tree ul {
+    list-style-type: none; /* 기본 리스트 마커 제거 */
+    padding-left: 20px; /* 모든 하위 ul에 대한 들여쓰기 */
+    margin: 0;
+}
+
+/* 최상위 ul (level 0)에서 패딩과 불릿을 완전히 제거 */
+.tree-level-0 {
+    padding-left: 0;
+    list-style-type: none; /* 최상위 노드의 불릿을 확실히 제거 */
+}
+
+.tree li {
+    margin: 8px 0;
+    position: relative;
+    font-size: 1.1em;
+}
+
+/* 카테고리 제목 (클릭 가능한 부분) */
+.tree-node-title {
+    cursor: pointer;
+    font-weight: bold;
+    color: #343a40;
+    padding: 5px 0;
+    display: flex;
+    align-items: center;
+}
+
+/* 토글 아이콘 (화살표) */
+.toggle-icon {
+    margin-right: 8px;
+    display: inline-block;
+    transition: transform 0.2s ease-in-out;
+    width: 1em; /* 아이콘이 없는 경우 공간 확보 */
+}
+
+/* 접혀 있을 때의 토글 아이콘 방향 (오른쪽) */
+.collapsed > .tree-node-title > .toggle-icon {
+    transform: rotate(0deg);
+}
+
+/* 펼쳐져 있을 때의 토글 아이콘 방향 (아래쪽) */
+.expanded > .tree-node-title > .toggle-icon {
+    transform: rotate(90deg);
+}
+
+/* 하위 ul (카테고리 목록) - 직계 자식 ul만 제어 */
+.tree-node > ul {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.expanded > ul {
+    max-height: 9999px; /* 충분히 큰 값으로 설정하여 내용에 따라 늘어나도록 */
+    
+    opacity: 1;
+    visibility: visible;
+    transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in;
+}
+
+/* 아이콘 목록 스타일 - 직계 자식 .icon-list만 제어 */
+.tree-node > .icon-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 10px;
+    padding-left: 20px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease-out, opacity 0.3s ease-out;
+    opacity: 0;
+    visibility: hidden;
+}
+
+.expanded > .icon-list.open {
+    max-height: 1024px;
+    opacity: 1;
+    visibility: visible;
+    transition: max-height 0.5s ease-in-out, opacity 0.3s ease-in;
+}
+
+/* 개별 아이콘 아이템 스타일 */
+.icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.5rem;
+    color: #6c757d;
+    text-align: center;
+    border: 1px solid #e0e0e0;
+    border-radius: 5px;
+    padding: 8px 5px;
+    width: 80px; /* 고정 너비 */
+    flex-shrink: 0;
+    box-sizing: border-box;
+    cursor: default; /* 이제 클릭 이벤트가 없으므로 커서 default로 */
+    transition: background-color 0.2s ease;
+}
+
+.icon-item:hover {
+    background-color: #f0f0f0;
+}
+
+/* 아이콘 SVG 이미지 스타일 */
+.icon-item img {
+    width: 32px;   /* 아이콘 미리보기 크기 (원하는 대로 조절) */
+    height: 32px;  /* 아이콘 미리보기 크기 */
+    object-fit: contain;
+    margin-bottom: 5px;
+    color: #007bff; /* SVG 자체 색상은 CSS로 변경이 어려울 수 있습니다. */
+}
+
+/* 로딩 메시지 */
+#icon-tree p {
+    text-align: center;
+    color: #6c757d;
+}

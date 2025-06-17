@@ -1,6 +1,0 @@
-icons/fontawesome-free-6.7.2-web/svgs/brands/42-group.svg
-icons/fontawesome-free-6.7.2-web/svgs/brands/500px.svg
-icons/fontawesome-free-6.7.2-web/svgs/brands/accessible-icon.svg
-icons/bootstrap-icons-1.9.1/1-circle-fill.svg
-icons/bootstrap-icons-1.9.1/1-circle.svg
-icons/bootstrap-icons-1.9.1/1-square-fill.svg

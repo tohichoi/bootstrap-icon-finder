@@ -397,6 +397,52 @@ function add_event_handlers() {
   // }
 }
 
+
+/**
+ * 부트스트랩 아이콘 이름을 기반으로 해당 아이콘이 속하는 최상위 카테고리를 비동기적으로 반환합니다.
+ * 아이콘 분류 데이터는 'bootstrap-icon-tree.json' 파일에서 AJAX를 통해 로드됩니다.
+ *
+ * @param {string} iconName - 찾고자 하는 부트스트랩 아이콘의 이름 (예: "file", "youtube").
+ * @returns {Promise<string|null>} 해당 아이콘의 최상위 카테고리 이름 (예: "General UI")을 resolve하는 Promise.
+ * 아이콘을 찾을 수 없거나 데이터 로드에 실패하면 `null`을 resolve합니다.
+ */
+ async function getBootstrapIconCategory(iconName) {
+  let iconCategories = null;
+
+  try {
+    // bootstrap-icon-tree.json 파일의 경로를 설정합니다.
+    // 실제 프로젝트 구조에 맞게 경로를 조정해주세요.
+    const response = await fetch('./bootstrap-icon-tree.json'); // 또는 '/assets/data/bootstrap-icon-tree.json' 등
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    iconCategories = await response.json();
+  } catch (error) {
+    console.error("Failed to load icon categories:", error);
+    return null; // 데이터 로드 실패 시 null 반환
+  }
+
+  // 데이터 로드에 성공한 경우, 아이콘 검색 로직을 수행합니다.
+  if (iconCategories) {
+    for (const categoryKey in iconCategories) {
+      if (iconCategories.hasOwnProperty(categoryKey)) {
+        const subCategories = iconCategories[categoryKey];
+        for (const subCategoryKey in subCategories) {
+          if (subCategories.hasOwnProperty(subCategoryKey)) {
+            const icons = subCategories[subCategoryKey];
+            if (icons.includes(iconName)) {
+              return categoryKey;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return null; // 아이콘을 찾지 못하거나 데이터가 없으면 null 반환
+}
+
+
 async function main() {
   var icon_name_vector = null;
   let search = document.getElementById('search');
