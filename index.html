@@ -136,6 +136,25 @@
       </div>
     </div>
     <!-- END: 검색 이력 -->
+
+    <!-- BEGIN: 복사 확인 모달 -->
+    <div class="modal fade" role="dialog" id="inform_copy" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">복사 결과</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#inform_copy"></button>
+          </div>
+          <div class="modal-body">
+            <img style="border: 2px solid; width:128px; height:128px;"/>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#inform_copy">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: 검색 이력 -->
   </div>
 </body>
 
@@ -387,6 +406,13 @@ function copy_icon_as_image(img, message, format) {
   canvas.toBlob(blob => {
     const data = [new ClipboardItem({ [blob.type]: blob })];
     navigator.clipboard.write(data).then(() => {
+      let modal = document.getElementById('inform_copy');
+      let dialog = new bootstrap.Modal(modal, {});
+      modal.addEventListener('shown.bs.modal', event => {
+        let img = document.getElementById('preview_image');
+        img.src = URL.createObjectURL([blob]);
+      });
+      dialog.show();
       message.textContent = '✅ Image copied to clipboard';
       setTimeout(() => {
         message.textContent = '';
