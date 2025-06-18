@@ -23,17 +23,15 @@
 
 <body>
   <div class="d-flex">
-    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="categories_offcanvas" aria-labelledby="categories_offcanvas_label">
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="categories_offcanvas">
       <div class="offcanvas-header">
-        <h5 class="offcanvas-title" id="categories_offcanvas_label">Backdrop with scrolling</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+        <h5 class="offcanvas-title" id="categories_offcanvas_label">Categories</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
       </div>
       <div class="offcanvas-body">
         <div class="container">
-          <h1>아이콘 분류 트리</h1>
-          <div id="icon-tree">
-            <div class="accordion" id="acc_parent">
-            </div>
+          <h3>Categories</h3>
+          <div id="category_container">
           </div>
         </div>
       </div>
@@ -291,7 +289,7 @@ function category_to_symbol(category) {
   return category.replaceAll(/[ ]+/g, '_');
 }
 
-function create_accordion_template(parent_selector, category, tags) {
+function create_accordion_template(category_container, category, tags) {
   const t = document.createElement('template');
   let cat = category_to_symbol(category);
   let tag_html = '';
@@ -309,7 +307,7 @@ function create_accordion_template(parent_selector, category, tags) {
           ${category}
         </button>
       </h2>
-      <div id="acc_${cat}_contents" class="accordion-collapse collapse" data-bs-parent="${parent_selector}">
+      <div id="acc_${cat}_contents" class="accordion-collapse collapse" data-bs-parent="${category_container}">
         <div class="accordion-body">
           ${tag_html}
         </div>
@@ -317,6 +315,30 @@ function create_accordion_template(parent_selector, category, tags) {
     </div>`
   ;
   return t.content;
+}
+
+
+function create_list_template(category_container, category, tags) {
+  const t = document.createElement('template');
+  let cat = category_to_symbol(category);
+  /*
+  let tag_html = '';
+  for (const t of tags) {
+    let btn_id = `${cat}_${category_to_symbol(t)}`;
+    tag_html += `
+    <input type="checkbox" class="btn-check btn-sm" id="btn_${btn_id}" autocomplete="off">
+    <label class="btn btn-sm" for="btn_${btn_id}">${t}</label>\n`;
+  }
+  */
+  let tags_data = tags.join(',');
+  let id = `listitem_${cat}`;
+  t.innerHTML = `
+    <div class="row mb-1">
+    <input type="checkbox" class="btn-check" id="${id}" data-tags="${tags_data}" autocomplete="off">
+    <label class="btn btn-outline-secondary" for="${id}">${category}</label>
+    </div>
+  `;
+  return [id, t.content];
 }
 
 
@@ -527,12 +549,27 @@ function add_event_handlers() {
 
   load_icon_info().then(data => {
     let tree = data; // Map
-    let pa = document.getElementById('acc_parent');
+    let pa = document.getElementById('category_container');
+    let ids = [];
     for (const key of Array.from(tree.keys()).sort()) {
-      let t = create_accordion_template('#acc_parent', key, tree.get(key).tags.values().toArray());
-      pa.appendChild(t);
+      let [id, t] = create_list_template('#category_container', key, tree.get(key).tags.values().toArray());
+      ids.push(id);
+      let c = pa.appendChild(t);
+      c.addEventListener('change', function (event) {
+        let elm = event.target;
+        let tags = elm.getAttribute('data-tags');
+        console.log(tags);
+        });
     }
-    console.log(tree);
+
+    ids.forEach((id) => {
+      document.getElementById(id).onchange = (event) => {
+        let elm = event.target;
+        let tags = elm.getAttribute('data-tags');
+        console.log(tags);
+      }
+    })
+    // console.log(tree);
   });
 }
 
@@ -542,28 +579,9 @@ async function load_icon_info() {
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
+
     const data = await response.json();
-    // Build the tree
-    /*
-      "0-circle": [
-    {
-      "vendor": "bi",
-      "file_name": "0-circle.svg",
-      "file_path": "icons/src/bootstrap-icons/docs/content/icons/0-circle.md",
-      "icon_name": "0-circle",
-      "icon_class": "bi-0-circle",
-      "categories": [
-        "Shapes"
-      ],
-      "tags": [
-        "numeral",
-        "number"
-      ],
-      "styles": [],
-      "friendly_name": "0 circle"
-    }
-  ],
-    */
+
     function get_catetory_nodes(categories, icon_data) {
       const icon_name = icon_data.icon_name;
 
@@ -580,8 +598,10 @@ async function load_icon_info() {
           else {
             let old_data = categories.get(cat);
             old_data.icon_names.forEach(n => data.icon_names.add(n));
-            if (icon_data.hasOwnProperty('tags'))
+            old_data.tags.forEach(t => data.tags.add(t));
+            if (icon_data.hasOwnProperty('tags')) {
               icon_data.tags.forEach(t => data.tags.add(t));
+            }
             categories.set(cat, data);
           }
         }
@@ -597,7 +617,7 @@ async function load_icon_info() {
     }
 
     // 'tree' now has a root node 'Categories' and 1st level nodes from data's top-level keys
-    console.log(categories);
+    // console.log(categories);
     // You can now use 'tree' for rendering or further processing
     return categories;
   } catch (error) {

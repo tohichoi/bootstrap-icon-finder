@@ -108,7 +108,9 @@ def load_bootstrap_categories():
     icon_infos = defaultdict(list)
     logger.info('[BI] Reading icon categories & tags')
     path = Path('icons/src/bootstrap-icons/docs/content/icons/')
-    for p in path.glob('*.md'):
+    # pat = 'filetype-*.md'
+    pat = '*.md'
+    for p in path.glob(pat):
         # 파일 파싱 실행
         metadata, body = parse_markdown_with_front_matter(p)
         # {'title': 'Arrow left', 'categories': ['Arrows'], 'tags': ['arrow']}
