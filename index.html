@@ -35,7 +35,7 @@
                 <input type="text" id="search" class="form-control" placeholder="search icon name..." value="">
               </div>
               <div class="col-auto">
-                <input type="button" id="search_history_button" class="btn btn-outline-secondary form-control" value="⌛" 
+                <input type="button" id="search_history_button" class="btn btn-outline-secondary form-control" value="search help" 
                   data-bs-toggle="modal" data-bs-target="#search_history">
               </div>
             </div>
@@ -51,13 +51,23 @@
               <input type="text" id="width" class="form-control" placeholder="size of icon" value="128">
             </div>
             <div class="col">
-              <label for="max_draw_icons" class="form-label">Show results up to ...</label>
+              <label for="max_draw_icons" class="form-label">Show icons</label>
               <input type="number" id="max_draw_icons" class="form-control" placeholder="maximum number of icons" value="100">
             </div>
             <!-- <div class="col"> -->
               <!-- <label for="color" class="form-label">Color</label> -->
               <!-- <input type="text" id="color" class="form-control" placeholder="color of icon" value="#ff0000"> -->
             <!-- </div> -->
+            <div class="col">
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="search_bi" checked>
+                <label for="search_bi" class="form-check-label">Show <i class="bi bi-bootstrap-fill" style="color: #6d2bf2"></i></label>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="search_fa" checked>
+                <label for="search_fa" class="form-check-label">Show <i class="fa-brands fa-square-font-awesome" style="color: #538dd7"></i></label>
+              </div>
+            </div>
             <div class="col">
               <div class="form-check form-switch">
                 <input class="form-check-input" type="checkbox" role="switch" id="show_filename">
@@ -116,26 +126,30 @@
             <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#search_history"></button>
           </div>
           <div class="modal-body">
-            <ul>
-              <li>검색형식1: <b>keyword:검색어1 검색어2</b></li>
-              <ul>
-                <li>keyword: <b>title</b>, <b>code</b>, <b>department</b>, <b>memo</b>, <b>regex</b>, <b>classified</b></li>
-                <li class="font-monospace">title:해외 학회</li>
-                <li class="font-monospace">code:동연 22 12</li>
-                <li class="font-monospace">department:101 105</li>
-                <li class="font-monospace">memo:PC 노트</li>
-                <li class="font-monospace">regex:(국내|해외)[ ]*학회</li>
-                <li class="font-monospace">classified:t</li>
-                <li class="font-monospace">classified:f</li>
-              </ul>
-              <li>검색형식2: <b>검색어1 검색어2 ...</b></li>
-              <ul>
-                <li><b>제목</b>, <b>등록번호</b>, <b>메모</b>에서 검색(단어 순서와 무관한 <b>AND</b>)</li>
-              </ul>
+            <ul class="list-group" id="term_list">
             </ul>
           </div>
           <div class="modal-footer">
             <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#search_history">닫기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- END: 검색 이력 -->
+
+    <!-- BEGIN: 복사 확인 모달 -->
+    <div class="modal fade" role="dialog" id="inform_copy" tabindex="-1">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title">복사 결과</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#inform_copy"></button>
+          </div>
+          <div class="modal-body">
+            <img style="border: 2px solid; width:128px; height:128px;"/>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#inform_copy">닫기</button>
           </div>
         </div>
       </div>
@@ -218,6 +232,18 @@ function create_template(data, w, h, m, color) {
   const icon_vendor = get_vendor(icon_prefix);
   const icon_vendor_color = get_vendor_color(icon_prefix);
   const bidata = icon_prefix + '-' + path.name.replace(/\.svg/g, '');
+  const search_bi = document.getElementById('search_bi').checked;
+  const search_fa = document.getElementById('search_fa').checked;
+
+  if (!search_bi && !search_fa)
+    return null;
+
+  if (!search_bi && icon_prefix === 'bi')
+      return null;
+      
+  if (!search_fa && icon_prefix === 'fa')
+      return null;
+
   t.innerHTML = `
   <div class="col" style="width: ${cw} height: ${ch}">
     <div class="row">
@@ -280,9 +306,36 @@ function draw_icons(icon_names) {
       }
     );
     
-    if (max_draw_icons > 0 && max_draw_icons < result.length)
-      result = result.slice(0, max_draw_icons);
-      
+    let new_result = result;
+    if (max_draw_icons > 0 && max_draw_icons < result.length) {
+      let bi_result = result.filter((v, i) => { 
+        return get_prefix(v) === 'bi';
+      });
+      let fa_result = result.filter((v, i) => { 
+        return get_prefix(v) === 'fa';
+      });
+
+      new_result = [];
+      while (true) {
+        if (bi_result.length > 0)
+          new_result.push(bi_result.pop());
+        if (new_result.length === max_draw_icons)
+          break;
+
+        if (fa_result.length > 0)
+          new_result.push(fa_result.pop());
+        if (new_result.length === max_draw_icons)
+          break;
+      }
+      // for (const i=0; i<Math.min(bi_result.length, fa_result.length); i++) {
+      //   new_result.push(result[i]);
+      //   if (i+1 === max_draw_icons)
+      //     break;
+      // }
+      // result = result.slice(0, max_draw_icons);
+      result = new_result;
+    }
+
     if (result.length === 0) {
       let t = document.createElement('template');
       t.innerHTML = '<i class="bi bi-exclamation-square-fill" style="color: rgb(255, 0, 0);"></i> No result';
@@ -294,6 +347,9 @@ function draw_icons(icon_names) {
     
     result.forEach((r) => {
       let t = create_template(r, w, h, m, color);
+      if (!t)
+        return;
+
       const fn = t.querySelector('.filename');
       if (show_fn) {
         fn.innerText = r;
@@ -350,6 +406,13 @@ function copy_icon_as_image(img, message, format) {
   canvas.toBlob(blob => {
     const data = [new ClipboardItem({ [blob.type]: blob })];
     navigator.clipboard.write(data).then(() => {
+      let modal = document.getElementById('inform_copy');
+      let dialog = new bootstrap.Modal(modal, {});
+      modal.addEventListener('shown.bs.modal', event => {
+        let img = document.getElementById('preview_image');
+        img.src = URL.createObjectURL([blob]);
+      });
+      dialog.show();
       message.textContent = '✅ Image copied to clipboard';
       setTimeout(() => {
         message.textContent = '';
@@ -374,7 +437,7 @@ function copy_icon(c) {
 
 function build_icon_name_vector(icon_names) {
   // split '-'
-  let names = icon_names.map(i => i.split('.')[0]);
+  let names = icon_names.map(i => { return split_path(i).name.split('.')[0] });
   let vector = new Map();
   for (const name of names) {
     if (name.length < 1)
@@ -383,7 +446,8 @@ function build_icon_name_vector(icon_names) {
       vector.set(word, (vector.get(word) || 0) + 1);
     }
   }
-  return Object.fromEntries(vector);
+  // array [ (name, count), ... ]
+  return [...vector].map(([k, v]) => ([k, v])).toSorted((x, y) => y[1] - x[1]);
 }
 
 
@@ -395,6 +459,19 @@ function add_event_handlers() {
   // b.onclick = (e) => {
   //   const modal = new bootstrap.Modal(document.getElementById('search_history'));
   // }
+
+  let icon_name_vector = build_icon_name_vector(icon_names);
+
+  let modal = document.getElementById('search_history');
+  modal.addEventListener('shown.bs.modal', event => {
+    for (i=0; i<30; i++) {
+      let l = document.getElementById('term_list');
+      let e = document.createElement('li');
+      e.classList.add('list-group-item');
+      e.innerHTML = `${icon_name_vector[i][0]} (${icon_name_vector[i][1]})`;
+      l.appendChild(e);
+    }
+  })
 }
 
 
@@ -451,7 +528,7 @@ async function main() {
     draw_icons(icon_names);
   }
 
-  let elms = ['search', 'max_draw_icons', 'width', 'show_filename'].map((i) => document.getElementById(i));
+  let elms = ['search', 'max_draw_icons', 'width', 'search_bi', 'search_fa', 'show_filename'].map((i) => document.getElementById(i));
   for (let i of elms) {
     i.onchange = (event) => {
       draw_icons(icon_names);

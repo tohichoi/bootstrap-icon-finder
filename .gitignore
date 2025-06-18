@@ -1,4 +1,3 @@
-icons/fontawesome
 config.toml
 cert/*.pem
 cert/*.crt
