@@ -1,0 +1,12 @@
+{
+  "devDependencies": {
+    "electron": "^36.5.0",
+    "electron-packager": "^17.1.2",
+    "jest-environment-jsdom": "^30.0.1"
+  },
+  "scripts": {
+    "start": "electron .",
+    "package-win": "electron-packager . bootstrap-icon-finder --platform=win32 --arch=x64 --overwrite"
+  },
+  "main": "main.js"
+}

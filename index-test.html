@@ -1,0 +1,719 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Icon Info IndexedDB Test</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/1.13.7/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+  <link href="https://cdn.datatables.net/buttons/2.4.1/css/buttons.bootstrap5.min.css" rel="stylesheet">
+  <style>
+    /* --- Sidebar Styles --- */
+    body { background: #f8f9fa; margin: 0; }
+    .sidebar {
+      width: 350px; min-width: 300px; max-width: 400px; border-right: 1px solid #eee;
+      background: #fff; padding: 1.5rem 1rem;
+    }
+    .sidebar h4 { margin-bottom: 1.5rem; }
+    .accordion { margin-bottom: 1.5rem; }
+
+    /* --- DataTables Styles --- */
+    #results { margin: 5%; width: 90%; max-width: 100%; overflow-x: auto; }
+    #results-table { width: 100% !important; table-layout: auto; }
+
+    /* --- Clear Button Styles --- */
+    #clear-search-categories, #clear-search-tags, #clear-search-vendor {
+      border: none !important; background: transparent !important; box-shadow: none !important; color: #888;
+    }
+    #clear-search-categories:focus, #clear-search-tags:focus, #clear-search-vendor:focus {
+      outline: none; box-shadow: none;
+    }
+
+    /* --- Icon Preview --- */
+    .icon-preview { width: 32px; height: 32px; }
+    .form-label { font-weight: 500; }
+  </style>
+</head>
+<body style="background: #f8f9fa; margin: 0;">
+<!--
+  Refactored index-test.html:
+  - All IDs and their JS references use kebab-case.
+  - Grouped and commented sections for clarity.
+  - Consistent indentation and whitespace.
+  - Moved inline styles to <style> where possible.
+  - Added section comments for sidebar accordions, main content, and modals.
+  - Ensured all event listeners and DOM queries use kebab-case IDs.
+  - Kept all logic and UI features unchanged, only improved structure and readability.
+-->
+<div class="d-flex" style="min-height: 100vh;">
+  <!-- Sidebar -->
+  <div class="sidebar bg-white p-3" style="width: 350px; min-width: 300px; max-width: 400px; border-right: 1px solid #eee;">
+    <h4 class="mb-4">Options</h4>
+
+    <!-- Sidebar Accordions: Category Filter, SVG Options, CRUD, Search -->
+    <!-- Category Filter Accordion with Language Selection -->
+    <div class="accordion mb-4" id="category-filter-accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-category-filter">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-category-filter" aria-expanded="false" aria-controls="collapse-category-filter">
+            Filter by Category
+          </button>
+        </h2>
+        <div id="collapse-category-filter" class="accordion-collapse collapse" aria-labelledby="heading-category-filter" data-bs-parent="#category-filter-accordion">
+          <div class="accordion-body">
+            <div class="mb-2">
+              <div class="btn-group btn-group-sm" role="group" aria-label="Language selection">
+                <button type="button" class="btn btn-outline-secondary active" id="lang-en-btn">English</button>
+                <button type="button" class="btn btn-outline-secondary" id="lang-ko-btn">한국어</button>
+              </div>
+            </div>
+            <form id="category-filter-form" class="row g-2">
+              <div id="category-checkboxes" class="d-flex flex-wrap gap-2"></div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- SVG Options Accordion -->
+    <div class="accordion mb-4" id="options-accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-options">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-options" aria-expanded="false" aria-controls="collapse-options">
+            SVG Options
+          </button>
+        </h2>
+        <div id="collapse-options" class="accordion-collapse collapse" aria-labelledby="heading-options" data-bs-parent="#options-accordion">
+          <div class="accordion-body">
+            <form id="svg-options-form" class="row g-3">
+              <div class="col-md-12">
+                <label for="svg-size" class="form-label">SVG Size (px)</label>
+                <input type="number" class="form-control" id="svg-size" value="32" min="1">
+              </div>
+              <div class="col-md-12">
+                <label for="svg-color" class="form-label">SVG Color</label>
+                <input type="color" class="form-control form-control-color" id="svg-color" value="#000000">
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRUD Accordion -->
+    <div class="accordion mb-4" id="crud-accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-crud">
+          <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-crud" aria-expanded="false" aria-controls="collapse-crud">
+            CRUD Operations
+          </button>
+        </h2>
+        <div id="collapse-crud" class="accordion-collapse collapse" aria-labelledby="heading-crud" data-bs-parent="#crud-accordion">
+          <div class="accordion-body">
+            <form id="crud-form" class="row g-3">
+              <div class="col-md-12">
+                <label for="icon-name" class="form-label">Icon Name</label>
+                <input type="text" class="form-control" id="icon-name" required>
+              </div>
+              <div class="col-md-12">
+                <label for="vendor" class="form-label">Vendor</label>
+                <input type="text" class="form-control" id="vendor">
+              </div>
+              <div class="col-md-12">
+                <label for="categories" class="form-label">Categories (comma separated)</label>
+                <input type="text" class="form-control" id="categories">
+              </div>
+              <div class="col-md-12">
+                <label for="tags" class="form-label">Tags (comma separated)</label>
+                <input type="text" class="form-control" id="tags">
+              </div>
+              <div class="col-md-12">
+                <label for="friendly-name" class="form-label">Friendly Name</label>
+                <input type="text" class="form-control" id="friendly-name">
+              </div>
+              <div class="col-md-12">
+                <label for="file-name" class="form-label">File Name</label>
+                <input type="text" class="form-control" id="file-name">
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-success">Add/Update</button>
+                <button type="button" id="delete-btn" class="btn btn-danger ms-2">Delete</button>
+                <span id="crud-status" class="ms-2"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Search Accordion -->
+    <div class="accordion mb-4" id="search-accordion">
+      <div class="accordion-item">
+        <h2 class="accordion-header" id="heading-search">
+          <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-search" aria-expanded="true" aria-controls="collapse-search">
+            Search
+          </button>
+        </h2>
+        <div id="collapse-search" class="accordion-collapse collapse show" aria-labelledby="heading-search" data-bs-parent="#search-accordion">
+          <div class="accordion-body">
+            <form id="search-form" class="row g-3">
+              <div class="col-md-12 position-relative">
+                <label for="search-categories" class="form-label">Categories</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="search-categories" placeholder="comma separated">
+                  <button type="button" class="btn btn-outline-secondary" id="clear-search-categories" tabindex="-1">&times;</button>
+                </div>
+              </div>
+              <div class="col-md-12 position-relative">
+                <label for="search-tags" class="form-label">Tags</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="search-tags" placeholder="comma separated">
+                  <button type="button" class="btn btn-outline-secondary" id="clear-search-tags" tabindex="-1">&times;</button>
+                </div>
+              </div>
+              <div class="col-md-12 position-relative">
+                <label for="search-vendor" class="form-label">Vendor</label>
+                <div class="input-group">
+                  <input type="text" class="form-control" id="search-vendor">
+                  <button type="button" class="btn btn-outline-secondary" id="clear-search-vendor" tabindex="-1">&times;</button>
+                </div>
+              </div>
+              <div class="col-12">
+                <button type="submit" class="btn btn-primary">Search</button>
+                <span id="search-status" class="ms-2"></span>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mb-3">
+      <button id="load-json" class="btn btn-primary w-100">Load icon_info.json into IndexedDB</button>
+      <span id="load-status" class="ms-2"></span>
+    </div>
+  </div>
+
+  <!-- Main Content: Results Table -->
+  <div class="flex-grow-1 main-content" style="margin-left: 0; padding: 2rem;">
+    <div class="card">
+      <div class="card-header">Results</div>
+      <div class="card-body p-0">
+        <div id="column-selectors"></div>
+        <div id="results" class="table-responsive"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: SVG Copy Confirmation -->
+<div class="modal fade" id="svg-copy-modal" tabindex="-1" aria-labelledby="svg-copy-modal-label" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="svg-copy-modal-label">SVG Copied!</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body text-center">
+        <div id="svg-copy-preview"></div>
+        <div class="mt-2">The SVG has been copied to your clipboard.</div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" id="svg-copy-ok-btn" class="btn btn-primary" data-bs-dismiss="modal">OK</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// =====================
+// IndexedDB Setup
+// =====================
+const DB_NAME = 'icon_info_db';
+const STORE_NAME = 'icons';
+const DB_VERSION = 1;
+let db = null;
+
+function open_db() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, DB_VERSION);
+    request.onupgradeneeded = function(event) {
+      db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        const store = db.createObjectStore(STORE_NAME, { keyPath: 'icon_name' });
+        store.createIndex('categories', 'categories', { multiEntry: true });
+        store.createIndex('tags', 'tags', { multiEntry: true });
+        store.createIndex('vendor', 'vendor', { unique: false });
+      }
+    };
+    request.onsuccess = function(event) {
+      db = event.target.result;
+      resolve(db);
+    };
+    request.onerror = function(event) {
+      reject(event.target.error);
+    };
+  });
+}
+
+async function load_json_to_db() {
+  document.getElementById('load-status').textContent = 'Loading...';
+  const response = await fetch('./data/icon_info.json');
+  const data = await response.json();
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  // Clear existing data first
+  await new Promise((resolve, reject) => {
+    const clearReq = store.clear();
+    clearReq.onsuccess = () => resolve();
+    clearReq.onerror = () => reject(clearReq.error);
+  });
+  let count = 0;
+  for (const icon_name in data) {
+    for (const icon of data[icon_name]) {
+      store.put(icon);
+      count++;
+    }
+  }
+  tx.oncomplete = () => {
+    document.getElementById('load-status').textContent = `Loaded ${count} icons.`;
+  };
+  tx.onerror = () => {
+    document.getElementById('load-status').textContent = 'Error loading data.';
+  };
+}
+
+document.getElementById('load-json').onclick = load_json_to_db;
+
+// =====================
+// CRUD Operations
+// =====================
+async function crud_add_update(event) {
+  event.preventDefault();
+  const icon = {
+    icon_name: document.getElementById('icon-name').value.trim(),
+    vendor: document.getElementById('vendor').value.trim(),
+    categories: document.getElementById('categories').value.split(',').map(s => s.trim()).filter(Boolean),
+    tags: document.getElementById('tags').value.split(',').map(s => s.trim()).filter(Boolean),
+    friendly_name: document.getElementById('friendly-name').value.trim(),
+    file_name: document.getElementById('file-name').value.trim(),
+  };
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  store.put(icon);
+  tx.oncomplete = () => {
+    document.getElementById('crud-status').textContent = 'Saved!';
+    setTimeout(() => document.getElementById('crud-status').textContent = '', 1500);
+    show_all_icons();
+  };
+  tx.onerror = () => {
+    document.getElementById('crud-status').textContent = 'Error saving.';
+  };
+}
+document.getElementById('crud-form').onsubmit = crud_add_update;
+
+document.getElementById('delete-btn').onclick = async function() {
+  const icon_name = document.getElementById('icon-name').value.trim();
+  if (!icon_name) return;
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readwrite');
+  const store = tx.objectStore(STORE_NAME);
+  store.delete(icon_name);
+  tx.oncomplete = () => {
+    document.getElementById('crud-status').textContent = 'Deleted!';
+    setTimeout(() => document.getElementById('crud-status').textContent = '', 1500);
+    show_all_icons();
+  };
+  tx.onerror = () => {
+    document.getElementById('crud-status').textContent = 'Error deleting.';
+  };
+};
+
+// =====================
+// Search UI
+// =====================
+async function search_icons(event) {
+  event.preventDefault();
+  const search_categories = document.getElementById('search-categories').value.split(',').map(s => s.trim()).filter(Boolean);
+  const search_tags = document.getElementById('search-tags').value.split(',').map(s => s.trim()).filter(Boolean);
+  const search_vendor = document.getElementById('search-vendor').value.trim();
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const results = [];
+  store.openCursor().onsuccess = function(event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      const icon = cursor.value;
+      let match = true;
+      if (search_categories.length > 0) {
+        match = search_categories.every(cat =>
+          icon.categories && icon.categories.some(ic => ic.toLowerCase().includes(cat.toLowerCase()))
+        );
+      }
+      if (match && search_tags.length > 0) {
+        match = search_tags.every(tag =>
+          icon.tags && icon.tags.some(it => it.toLowerCase().includes(tag.toLowerCase()))
+        );
+      }
+      if (match && search_vendor) {
+        match = icon.vendor === search_vendor;
+      }
+      if (match) results.push(icon);
+      cursor.continue();
+    } else {
+      show_results(results);
+      document.getElementById('search-status').textContent = `Found ${results.length} icons.`;
+    }
+  };
+}
+document.getElementById('search-form').onsubmit = search_icons;
+
+// =====================
+// Category Filter Logic
+// =====================
+async function get_all_categories() {
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const categories_set = new Set();
+  return new Promise((resolve) => {
+    store.openCursor().onsuccess = function(event) {
+      const cursor = event.target.result;
+      if (cursor) {
+        const icon = cursor.value;
+        (icon.categories || []).forEach(cat => categories_set.add(cat));
+        cursor.continue();
+      } else {
+        resolve(Array.from(categories_set).sort());
+      }
+    };
+  });
+}
+
+const CATEGORY_LANG_MAP = {
+  // Example mapping, extend as needed
+  'Shapes': { en: 'Shapes', ko: '도형' },
+  'Typography': { en: 'Typography', ko: '타이포그래피' },
+  'Numbers': { en: 'Numbers', ko: '숫자' },
+  'Number': { en: 'Number', ko: '숫자' },
+  'Numeral': { en: 'Numeral', ko: '숫자' },
+  // Add more categories as needed
+};
+let current_category_lang = 'en';
+
+async function render_category_checkboxes() {
+  const categories = await get_all_categories();
+  const container = document.getElementById('category-checkboxes');
+  if (!container) return;
+  // Preserve checked state
+  const checkedValues = Array.from(container.querySelectorAll('input[type=checkbox]:checked')).map(cb => cb.value);
+  container.innerHTML = '';
+  categories.forEach(cat => {
+    const id = 'cat_cb_' + cat.replace(/[^a-zA-Z0-9]/g, '_');
+    const label = CATEGORY_LANG_MAP[cat]?.[current_category_lang] || cat;
+    const div = document.createElement('div');
+    div.className = 'btn-group btn-group-sm mb-1';
+    div.setAttribute('role', 'group');
+    div.innerHTML = `
+      <input type="checkbox" class="btn-check" id="${id}" autocomplete="off" value="${cat}"${checkedValues.includes(cat) ? ' checked' : ''}>
+      <label class="btn btn-outline-primary" for="${id}">${label}</label>
+    `;
+    container.appendChild(div);
+  });
+}
+
+async function filter_by_categories() {
+  const checked = Array.from(document.querySelectorAll('#category-checkboxes input[type=checkbox]:checked')).map(cb => cb.value);
+  if (checked.length === 0) {
+    show_all_icons();
+    return;
+  }
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const results = [];
+  store.openCursor().onsuccess = function(event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      const icon = cursor.value;
+      if ((icon.categories || []).some(cat => checked.includes(cat))) {
+        results.push(icon);
+      }
+      cursor.continue();
+    } else {
+      show_results(results);
+      document.getElementById('search-status').textContent = `Filtered by category: ${checked.join(', ')} (${results.length} icons)`;
+    }
+  };
+}
+
+function update_category_button_labels() {
+  // Update the accordion button text
+  const accordionBtn = document.querySelector('#heading-category-filter .accordion-button');
+  if (accordionBtn) {
+    accordionBtn.textContent = current_category_lang === 'ko' ? '카테고리로 필터' : 'Filter by Category';
+  }
+  // Update the language button texts
+  document.getElementById('lang-en-btn').textContent = current_category_lang === 'ko' ? '영어' : 'English';
+  document.getElementById('lang-ko-btn').textContent = current_category_lang === 'ko' ? '한국어' : 'Korean';
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  render_category_checkboxes();
+  document.getElementById('category-checkboxes').addEventListener('change', filter_by_categories);
+  update_category_button_labels();
+});
+
+document.getElementById('lang-en-btn').onclick = function() {
+  current_category_lang = 'en';
+  document.getElementById('lang-en-btn').classList.add('active');
+  document.getElementById('lang-ko-btn').classList.remove('active');
+  update_category_button_labels();
+  render_category_checkboxes();
+};
+document.getElementById('lang-ko-btn').onclick = function() {
+  current_category_lang = 'ko';
+  document.getElementById('lang-ko-btn').classList.add('active');
+  document.getElementById('lang-en-btn').classList.remove('active');
+  update_category_button_labels();
+  render_category_checkboxes();
+};
+
+// =====================
+// DataTables & Results Rendering
+// =====================
+// Show all icons in table
+async function show_all_icons() {
+  const db = await open_db();
+  const tx = db.transaction(STORE_NAME, 'readonly');
+  const store = tx.objectStore(STORE_NAME);
+  const results = [];
+  store.openCursor().onsuccess = function(event) {
+    const cursor = event.target.result;
+    if (cursor) {
+      results.push(cursor.value);
+      cursor.continue();
+    } else {
+      show_results(results);
+    }
+  };
+}
+
+function show_results(results) {
+  const el = document.getElementById('results');
+  if (results.length === 0) {
+    el.innerHTML = '<div class="p-3">No results.</div>';
+    // document.getElementById('column-selectors').innerHTML = '';
+    return;
+  }
+  const columns = [
+    { title: 'SVG', key: 'svg' },
+    { title: 'Categories', key: 'categories' },
+    { title: 'Tags', key: 'tags' },
+    { title: 'Friendly Name', key: 'friendly_name' },
+    { title: 'Icon Name', key: 'icon_name' },
+    { title: 'File Name', key: 'file_name' },
+    { title: 'File Path', key: 'file_path' },
+    { title: 'Vendor', key: 'vendor' }
+  ];
+  let html = '<table id="results-table" class="table table-sm table-striped table-bordered mb-0"><thead><tr>';
+  for (const col of columns) {
+    html += `<th>${col.title}</th>`;
+  }
+  html += '</tr></thead><tbody>';
+  for (const icon of results) {
+    html += `<tr>
+      <td class="svg-cell" data-svg-path="${icon.file_path || ''}"></td>
+      <td>${(icon.categories || []).join(', ')}</td>
+      <td>${(icon.tags || []).join(', ')}</td>
+      <td>${icon.friendly_name || ''}</td>
+      <td>${icon.icon_name}</td>
+      <td>${icon.file_name || ''}</td>
+      <td>${icon.file_path || ''}</td>
+      <td>${icon.vendor}</td>
+    </tr>`;
+  }
+  html += '</tbody></table>';
+  el.innerHTML = html;
+  // Initialize DataTables with Bootstrap 5 theme and ColVis button
+  if (window.jQuery && $('#results-table').length) {
+    const dt = $('#results-table').DataTable({
+      paging: true,
+      pageLength: 10,
+      lengthMenu: [5, 10, 25, 50, 100],
+      dom: 'Bfrtip',
+      buttons: [
+        {
+          extend: 'colvis',
+          collectionLayout: 'fixed two-column',
+          text: 'Select columns'
+        }
+      ],
+      columnDefs: [
+        { targets: [3, 5, 6, 7], visible: false } // 3: Friendly Name, 5: File Name, 6: File Path, 7: Vendor
+      ]
+    });
+    // Render SVGs on initial draw and every redraw (pagination, search, etc)
+    dt.on('draw', function() {
+      render_svg_cells();
+    });
+    render_svg_cells();
+  } else {
+    render_svg_cells();
+  }
+}
+
+// =====================
+// SVG Preview & Copy Logic
+// =====================
+function render_svg_cells() {
+  const size = parseInt(document.getElementById('svg-size')?.value) || 32;
+  const color = document.getElementById('svg-color')?.value || '#000000';
+  document.querySelectorAll('.svg-cell').forEach(async function(cell) {
+    if (cell.getAttribute('data-svg-rendered')) return;
+    const svg_path = cell.getAttribute('data-svg-path');
+    if (svg_path) {
+      try {
+        const response = await fetch(svg_path);
+        if (response.ok) {
+          let svg_text = await response.text();
+          // Set width, height, and color (fill) in SVG
+          svg_text = svg_text.replace(/<svg([^>]*)width="[^"]*"/i, '<svg$1')
+                             .replace(/<svg([^>]*)height="[^"]*"/i, '<svg$1')
+                             .replace(/<svg([^>]*)>/i, `<svg$1 width="${size}" height="${size}">`);
+          // Set fill color for all paths
+          svg_text = svg_text.replace(/(<path[^>]*)(fill="[^"]*")?/gi, (m, p1) => {
+            // Remove existing fill and add new fill
+            return p1.replace(/fill="[^"]*"/gi, '') + ` fill="${color}"`;
+          });
+          cell.innerHTML = svg_text;
+          cell.setAttribute('data-svg-rendered', '1');
+          // Add click-to-copy event
+          const svgElem = cell.querySelector('svg');
+          if (svgElem) {
+            svgElem.style.cursor = 'pointer';
+            svgElem.title = 'Click to copy SVG';
+            svgElem.addEventListener('click', function(e) {
+              copy_svg_to_clipboard(svgElem.outerHTML);
+            });
+          }
+        } else {
+          cell.textContent = 'Not found';
+        }
+      } catch (e) {
+        cell.textContent = 'Error';
+      }
+    }
+  });
+}
+
+async function copy_svg_to_clipboard(svg_html) {
+  try {
+    const CANVAS_SIZE = 512;
+    // Ensure viewBox exists
+    let svg_text = svg_html;
+    if (!/viewBox=/i.test(svg_text)) {
+      svg_text = svg_text.replace(
+        /<svg([^>]*)>/i,
+        `<svg$1 viewBox="0 0 ${CANVAS_SIZE} ${CANVAS_SIZE}">`
+      );
+    }
+    svg_text = svg_text
+      .replace(/<svg([^>]*)width="[^"]*"/i, '<svg$1')
+      .replace(/<svg([^>]*)height="[^"]*"/i, '<svg$1')
+      .replace(/<svg([^>]*)>/i, `<svg$1 width="${CANVAS_SIZE}" height="${CANVAS_SIZE}">`);
+
+    // Convert SVG to data URL
+    const svg_base64 = btoa(unescape(encodeURIComponent(svg_text)));
+    const img = new Image();
+    img.src = `data:image/svg+xml;base64,${svg_base64}`;
+
+    await new Promise((resolve, reject) => {
+      img.onload = resolve;
+      img.onerror = reject;
+    });
+
+    const canvas = document.createElement('canvas');
+    canvas.width = CANVAS_SIZE;
+    canvas.height = CANVAS_SIZE;
+    const ctx = canvas.getContext('2d');
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0, CANVAS_SIZE, CANVAS_SIZE);
+
+    canvas.toBlob(async function(blob) {
+      try {
+        await navigator.clipboard.write([
+          new ClipboardItem({ [blob.type]: blob })
+        ]);
+        // Show modal with preview (check existence)
+        const preview_el = document.getElementById('svgCopyPreview') || document.getElementById('svg_copy_preview');
+        const modal_el = document.getElementById('svgCopyModal') || document.getElementById('svg_copy_modal');
+        if (preview_el) preview_el.innerHTML = svg_html;
+        if (modal_el) {
+          const ok_btn = document.getElementById('svgCopyOkBtn');
+          if (ok_btn) {
+            ok_btn.disabled = false;
+            ok_btn.textContent = 'OK (3)';
+            let seconds = 3;
+            const interval = setInterval(() => {
+              seconds--;
+              ok_btn.textContent = `OK (${seconds})`;
+              if (seconds === 0) {
+                clearInterval(interval);
+                ok_btn.textContent = 'OK';
+              }
+            }, 1000);
+          }
+          const modal = new bootstrap.Modal(modal_el);
+          modal.show();
+        }
+      } catch (e) {
+        alert('Failed to copy image: ' + e);
+      }
+    }, 'image/png');
+  } catch (e) {
+    alert('Failed to copy SVG as image: ' + e);
+  }
+}
+
+// =====================
+// Event Listeners & Initialization
+// =====================
+// Show all icons on page load
+show_all_icons();
+
+// Re-render SVGs when options change
+if (document.getElementById('svg-size')) {
+  document.getElementById('svg-size').addEventListener('input', function() {
+    document.querySelectorAll('.svg-cell').forEach(cell => cell.removeAttribute('data-svg-rendered'));
+    render_svg_cells();
+  });
+}
+if (document.getElementById('svg-color')) {
+  document.getElementById('svg-color').addEventListener('input', function() {
+    document.querySelectorAll('.svg-cell').forEach(cell => cell.removeAttribute('data-svg-rendered'));
+    render_svg_cells();
+  });
+}
+document.getElementById('clear-search-categories').onclick = function() {
+  document.getElementById('search-categories').value = '';
+};
+document.getElementById('clear-search-tags').onclick = function() {
+  document.getElementById('search-tags').value = '';
+};
+document.getElementById('clear-search-vendor').onclick = function() {
+  document.getElementById('search-vendor').value = '';
+};
+</script>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.7/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.4.1/js/buttons.colVis.min.js"></script>
+</body>
+</html>

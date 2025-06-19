@@ -114,8 +114,8 @@ def load_bootstrap_categories():
         # 파일 파싱 실행
         metadata, body = parse_markdown_with_front_matter(p)
         # {'title': 'Arrow left', 'categories': ['Arrows'], 'tags': ['arrow']}
-        
-        icon_info = IconInfo(icon_path=p)
+        icon_path = Path('icons/src/bootstrap-icons/icons') / p.with_suffix('.svg').name
+        icon_info = IconInfo(icon_path=icon_path)
         cat = metadata.get('categories', [])
         icon_info.categories = [ s.capitalize() for s in list(set(cat if cat else [])) ]
         tags = metadata.get('tags', [])
