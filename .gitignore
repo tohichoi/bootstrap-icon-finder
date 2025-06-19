@@ -12,3 +12,5 @@ css/fontawesome
 __pycache__
 data/
 venv
+node_modules
+bootstrap-icon-finder-win32-x64/
