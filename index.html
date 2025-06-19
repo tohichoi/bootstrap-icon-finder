@@ -22,139 +22,156 @@
 </head>
 
 <body>
-  <div class="container">
-    <!-- BEGIN: 검색 -->
-    <div class="row mt-3">
-      <div class="col">
-        <fieldset>
-          <legend>Search file name</legend>
+  <div class="d-flex">
+    <div class="offcanvas offcanvas-start" data-bs-scroll="true" tabindex="-1" id="categories_offcanvas">
+      <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="categories_offcanvas_label">Categories</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+      </div>
+      <div class="offcanvas-body">
+        <div class="container">
+          <h3>Categories</h3>
+          <div id="category_container">
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="flex-grow-1 main-content" style="margin-left: 10px;">
+      <div class="container">
+        <!-- BEGIN: 검색 -->
+        <div class="row mt-3">
           <div class="col">
-            <label for="search" class="form-label">Regular expression</label>
-            <div class="row">
+            <fieldset>
+              <legend>Search file name</legend>
               <div class="col">
-                <input type="text" id="search" class="form-control" placeholder="search icon name..." value="">
+                <label for="search" class="form-label">Regular expression</label>
+                <div class="row">
+                  <div class="col">
+                    <input type="text" id="search" class="form-control" placeholder="search icon name..." value="">
+                  </div>
+                  <div class="col-auto">
+                    <input type="button" id="search_history_button" class="btn btn-outline-secondary form-control" value="Tags" 
+                      data-bs-toggle="modal" data-bs-target="#search_history">
+                  </div>
+                  <div class="col-auto">
+                    <input type="button" id="search_categories_button" class="btn btn-outline-secondary form-control" 
+                      data-bs-toggle="offcanvas" data-bs-target="#categories_offcanvas" value="Category">
+                  </div>
+                </div>
               </div>
-              <div class="col-auto">
-                <input type="button" id="search_history_button" class="btn btn-outline-secondary form-control" value="search help" 
-                  data-bs-toggle="modal" data-bs-target="#search_history">
-              </div>
-            </div>
+            </fieldset>
           </div>
-        </fieldset>
-      </div>
-      <div class="col">
-        <fieldset>
-          <legend>View options</legend>
-          <div class="row">
-            <div class="col">
-              <label for="width" class="form-label">Icon size(px)</label>
-              <input type="text" id="width" class="form-control" placeholder="size of icon" value="128">
-            </div>
-            <div class="col">
-              <label for="max_draw_icons" class="form-label">Show icons</label>
-              <input type="number" id="max_draw_icons" class="form-control" placeholder="maximum number of icons" value="100">
-            </div>
-            <!-- <div class="col"> -->
-              <!-- <label for="color" class="form-label">Color</label> -->
-              <!-- <input type="text" id="color" class="form-control" placeholder="color of icon" value="#ff0000"> -->
-            <!-- </div> -->
-            <div class="col">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="search_bi" checked>
-                <label for="search_bi" class="form-check-label">Show <i class="bi bi-bootstrap-fill" style="color: #6d2bf2"></i></label>
+          <div class="col">
+            <fieldset>
+              <legend>View options</legend>
+              <div class="row">
+                <div class="col">
+                  <label for="width" class="form-label">Icon size(px)</label>
+                  <input type="text" id="width" class="form-control" placeholder="size of icon" value="128">
+                </div>
+                <div class="col">
+                  <label for="max_draw_icons" class="form-label">Show icons</label>
+                  <input type="number" id="max_draw_icons" class="form-control" placeholder="maximum number of icons" value="100">
+                </div>
+                <div class="col">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="search_bi" checked>
+                    <label for="search_bi" class="form-check-label">Show <i class="bi bi-bootstrap-fill" style="color: #6d2bf2"></i></label>
+                  </div>
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="search_fa" checked>
+                    <label for="search_fa" class="form-check-label">Show <i class="fa-brands fa-square-font-awesome" style="color: #538dd7"></i></label>
+                  </div>
+                </div>
+                <div class="col">
+                  <div class="form-check form-switch">
+                    <input class="form-check-input" type="checkbox" role="switch" id="show_filename">
+                    <label for="show_filename" class="form-check-label">Show file name</label>
+                  </div>
+                </div>
               </div>
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="search_fa" checked>
-                <label for="search_fa" class="form-check-label">Show <i class="fa-brands fa-square-font-awesome" style="color: #538dd7"></i></label>
-              </div>
-            </div>
-            <div class="col">
-              <div class="form-check form-switch">
-                <input class="form-check-input" type="checkbox" role="switch" id="show_filename">
-                <label for="show_filename" class="form-check-label">Show file name</label>
-              </div>
-            </div>
+            </fieldset>
           </div>
-        </fieldset>
-      </div>
-      <div class="col-2">
-        <fieldset>
-          <legend>Copy format</legend>
-          <div class="row">
-            <div class="col">
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="image_format" id="option_png" value="png">
-                <label class="form-check-label" for="option_png">PNG</label>
+          <div class="col-2">
+            <fieldset>
+              <legend>Copy format</legend>
+              <div class="row">
+                <div class="col">
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="image_format" id="option_png" value="png">
+                    <label class="form-check-label" for="option_png">PNG</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="image_format" id="option_svg" value="svg" checked>
+                    <label class="form-check-label" for="option_svg">SVG</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="image_format" id="option_svg_text" value="svg_text">
+                    <label class="form-check-label" for="option_svg_text">SVG(text)</label>
+                  </div>
+                  <div class="form-check">
+                    <input class="form-check-input" type="radio" name="image_format" id="option_jpg" value="jpg">
+                    <label class="form-check-label" for="option_jpg">JPG</label>
+                  </div>
+                </div>
               </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="image_format" id="option_svg" value="svg" checked>
-                <label class="form-check-label" for="option_svg">SVG</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="image_format" id="option_svg_text" value="svg_text">
-                <label class="form-check-label" for="option_svg_text">SVG(text)</label>
-              </div>
-              <div class="form-check">
-                <input class="form-check-input" type="radio" name="image_format" id="option_jpg" value="jpg">
-                <label class="form-check-label" for="option_jpg">JPG</label>
-              </div>
-            </div>
-          </div>
-        </fieldset>
-      </div>
-    </div>
-    <!-- END: 검색 -->
-
-    <!-- BEGIN: 검색 결과 요약 -->
-    <div class="row">
-      <div class="col" id="search_result" >
-      </div>
-    </div>
-    <!-- END: 검색 결과 요약 -->
-
-    <!-- BEGIN: 검색 결과 -->
-    <div class="row justify-content-center align-items-begin" style="min-height: 100px;" id="result">
-    </div>
-    <!-- END: 검색 결과 -->
-
-    <!-- BEGIN: 검색 이력 모달 -->
-    <div class="modal fade" role="dialog" id="search_history" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">검색 이력</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#search_history"></button>
-          </div>
-          <div class="modal-body">
-            <ul class="list-group" id="term_list">
-            </ul>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#search_history">닫기</button>
+            </fieldset>
           </div>
         </div>
-      </div>
-    </div>
-    <!-- END: 검색 이력 -->
+        <!-- END: 검색 -->
 
-    <!-- BEGIN: 복사 확인 모달 -->
-    <div class="modal fade" role="dialog" id="inform_copy" tabindex="-1">
-      <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title">복사 결과</h5>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#inform_copy"></button>
-          </div>
-          <div class="modal-body">
-            <img style="border: 2px solid; width:128px; height:128px;"/>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#inform_copy">닫기</button>
+        <!-- BEGIN: 검색 결과 요약 -->
+        <div class="row">
+          <div class="col" id="search_result" >
           </div>
         </div>
+        <!-- END: 검색 결과 요약 -->
+
+        <!-- BEGIN: 검색 결과 -->
+        <div class="row justify-content-center align-items-begin" style="min-height: 100px;" id="result">
+        </div>
+        <!-- END: 검색 결과 -->
+
+        <!-- BEGIN: 검색 이력 모달 -->
+        <div class="modal fade" role="dialog" id="search_history" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">검색 이력</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#search_history"></button>
+              </div>
+              <div class="modal-body">
+                <ul class="list-group" id="term_list">
+                </ul>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#search_history">닫기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END: 검색 이력 -->
+
+        <!-- BEGIN: 복사 확인 모달 -->
+        <div class="modal fade" role="dialog" id="inform_copy" tabindex="-1">
+          <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <h5 class="modal-title">복사 결과</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" data-bs-target="#inform_copy"></button>
+              </div>
+              <div class="modal-body">
+                <img style="border: 2px solid; width:128px; height:128px;"/>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-bs-dismiss="modal" data-bs-target="#inform_copy">닫기</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        <!-- END: 검색 이력 -->
       </div>
     </div>
-    <!-- END: 검색 이력 -->
   </div>
 </body>
 
@@ -223,7 +240,7 @@ function get_vendor_color(icon_prefix) {
 }
 
 
-function create_template(data, w, h, m, color) {
+function create_icon_template(data, w, h, m, color) {
   const t = document.createElement('template');
   const cw = w*1.1;
   const ch = h*1.1;
@@ -265,6 +282,63 @@ function create_template(data, w, h, m, color) {
   </div>`
   ;
   return t.content;
+}
+
+
+function category_to_symbol(category) {
+  return category.replaceAll(/[ ]+/g, '_');
+}
+
+function create_accordion_template(category_container, category, tags) {
+  const t = document.createElement('template');
+  let cat = category_to_symbol(category);
+  let tag_html = '';
+  for (const t of tags) {
+    let btn_id = `${cat}_${category_to_symbol(t)}`;
+    tag_html += `
+    <input type="checkbox" class="btn-check btn-sm" id="btn_${btn_id}" autocomplete="off">
+    <label class="btn btn-sm" for="btn_${btn_id}">${t}</label>\n`;
+  }
+
+  t.innerHTML = `
+    <div class="accordion-item">
+      <h2 class="accordion-header">
+        <button class="accordion-button collapsed py-1" type="button" data-bs-toggle="collapse" data-bs-target="#acc_${cat}_contents">
+          ${category}
+        </button>
+      </h2>
+      <div id="acc_${cat}_contents" class="accordion-collapse collapse" data-bs-parent="${category_container}">
+        <div class="accordion-body">
+          ${tag_html}
+        </div>
+      </div>
+    </div>`
+  ;
+  return t.content;
+}
+
+
+function create_list_template(category_container, category, tags) {
+  const t = document.createElement('template');
+  let cat = category_to_symbol(category);
+  /*
+  let tag_html = '';
+  for (const t of tags) {
+    let btn_id = `${cat}_${category_to_symbol(t)}`;
+    tag_html += `
+    <input type="checkbox" class="btn-check btn-sm" id="btn_${btn_id}" autocomplete="off">
+    <label class="btn btn-sm" for="btn_${btn_id}">${t}</label>\n`;
+  }
+  */
+  let tags_data = tags.join(',');
+  let id = `listitem_${cat}`;
+  t.innerHTML = `
+    <div class="row mb-1">
+    <input type="checkbox" class="btn-check" id="${id}" data-tags="${tags_data}" autocomplete="off">
+    <label class="btn btn-outline-secondary" for="${id}">${category}</label>
+    </div>
+  `;
+  return [id, t.content];
 }
 
 
@@ -346,7 +420,7 @@ function draw_icons(icon_names) {
     }
     
     result.forEach((r) => {
-      let t = create_template(r, w, h, m, color);
+      let t = create_icon_template(r, w, h, m, color);
       if (!t)
         return;
 
@@ -471,54 +545,86 @@ function add_event_handlers() {
       e.innerHTML = `${icon_name_vector[i][0]} (${icon_name_vector[i][1]})`;
       l.appendChild(e);
     }
-  })
+  });
+
+  load_icon_info().then(data => {
+    let tree = data; // Map
+    let pa = document.getElementById('category_container');
+    let ids = [];
+    for (const key of Array.from(tree.keys()).sort()) {
+      let [id, t] = create_list_template('#category_container', key, tree.get(key).tags.values().toArray());
+      ids.push(id);
+      let c = pa.appendChild(t);
+      c.addEventListener('change', function (event) {
+        let elm = event.target;
+        let tags = elm.getAttribute('data-tags');
+        console.log(tags);
+        });
+    }
+
+    ids.forEach((id) => {
+      document.getElementById(id).onchange = (event) => {
+        let elm = event.target;
+        let tags = elm.getAttribute('data-tags');
+        console.log(tags);
+      }
+    })
+    // console.log(tree);
+  });
 }
 
-
-/**
- * 부트스트랩 아이콘 이름을 기반으로 해당 아이콘이 속하는 최상위 카테고리를 비동기적으로 반환합니다.
- * 아이콘 분류 데이터는 'bootstrap-icon-tree.json' 파일에서 AJAX를 통해 로드됩니다.
- *
- * @param {string} iconName - 찾고자 하는 부트스트랩 아이콘의 이름 (예: "file", "youtube").
- * @returns {Promise<string|null>} 해당 아이콘의 최상위 카테고리 이름 (예: "General UI")을 resolve하는 Promise.
- * 아이콘을 찾을 수 없거나 데이터 로드에 실패하면 `null`을 resolve합니다.
- */
- async function getBootstrapIconCategory(iconName) {
-  let iconCategories = null;
-
+async function load_icon_info() {
   try {
-    // bootstrap-icon-tree.json 파일의 경로를 설정합니다.
-    // 실제 프로젝트 구조에 맞게 경로를 조정해주세요.
-    const response = await fetch('./bootstrap-icon-tree.json'); // 또는 '/assets/data/bootstrap-icon-tree.json' 등
+    const response = await fetch('./data/icon_info.json');
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
-    iconCategories = await response.json();
-  } catch (error) {
-    console.error("Failed to load icon categories:", error);
-    return null; // 데이터 로드 실패 시 null 반환
-  }
 
-  // 데이터 로드에 성공한 경우, 아이콘 검색 로직을 수행합니다.
-  if (iconCategories) {
-    for (const categoryKey in iconCategories) {
-      if (iconCategories.hasOwnProperty(categoryKey)) {
-        const subCategories = iconCategories[categoryKey];
-        for (const subCategoryKey in subCategories) {
-          if (subCategories.hasOwnProperty(subCategoryKey)) {
-            const icons = subCategories[subCategoryKey];
-            if (icons.includes(iconName)) {
-              return categoryKey;
+    const data = await response.json();
+
+    function get_catetory_nodes(categories, icon_data) {
+      const icon_name = icon_data.icon_name;
+
+      if (icon_data.categories && icon_data.categories.length > 0) {
+        let data = { icon_names: new Set(), tags: new Set() };
+        data.icon_names.add(icon_name);
+
+        for (const cat of icon_data.categories) {
+          if (!categories.has(cat)) {
+            if (icon_data.hasOwnProperty('tags'))
+              icon_data.tags.forEach(t => data.tags.add(t));
+            categories.set(cat, data);
+          }
+          else {
+            let old_data = categories.get(cat);
+            old_data.icon_names.forEach(n => data.icon_names.add(n));
+            old_data.tags.forEach(t => data.tags.add(t));
+            if (icon_data.hasOwnProperty('tags')) {
+              icon_data.tags.forEach(t => data.tags.add(t));
             }
+            categories.set(cat, data);
           }
         }
       }
+      return categories;
     }
+
+    let categories = new Map();
+    for (const [key, value] of Object.entries(data)) {
+      for (const icon_data of value) {
+        get_catetory_nodes(categories, icon_data);
+      }
+    }
+
+    // 'tree' now has a root node 'Categories' and 1st level nodes from data's top-level keys
+    // console.log(categories);
+    // You can now use 'tree' for rendering or further processing
+    return categories;
+  } catch (error) {
+    console.error('Failed to load icon_tree.json: ', error);
+    return null;
   }
-
-  return null; // 아이콘을 찾지 못하거나 데이터가 없으면 null 반환
 }
-
 
 async function main() {
   var icon_name_vector = null;
@@ -544,4 +650,5 @@ async function main() {
 document.addEventListener('DOMContentLoaded', main);
 
 </script>
+
 </html>

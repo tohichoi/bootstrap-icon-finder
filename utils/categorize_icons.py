@@ -8,9 +8,13 @@ from collections import OrderedDict, defaultdict
 from bs4 import BeautifulSoup
 import yaml
 import json
-
-
+import logging
 from icon_info import IconInfo
+
+
+# Set up logger
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 
 def load_icon_info():
@@ -22,8 +26,8 @@ def load_icon_info():
             ii = IconInfo(path)
             icon_infos[ii.icon_class] = ii
 
-    for icon_name, icon_info in icon_infos.items():
-        print(icon_info)
+    # for icon_name, icon_info in icon_infos.items():
+    #     print(icon_info)
     # print(icon_name_to_infos)
 
     return icon_infos
@@ -53,7 +57,7 @@ def get_bi_taxanomy_from_web(icon_info: IconInfo):
         # #content > div.row.align-items-md-center > div.col-md-6.col-lg-8 > ul
         # print(html_content)
     except Exception as e:
-        print(e)
+        logger.error(e)
         return None
 
 
@@ -81,9 +85,16 @@ def parse_markdown_with_front_matter(file_path):
         markdown_body = parts[2].strip()
         
         try:
+            # Remove resolver for bool so 'no', 'yes', etc. are loaded as strings
+            for ch in "yYnNoO":
+                if ch in yaml.SafeLoader.yaml_implicit_resolvers:
+                    yaml.SafeLoader.yaml_implicit_resolvers[ch] = [
+                        x for x in yaml.SafeLoader.yaml_implicit_resolvers[ch]
+                        if x[0] != 'tag:yaml.org,2002:bool'
+                    ]
             metadata = yaml.safe_load(front_matter_str)
         except yaml.YAMLError as e:
-            print(f"YAML 파싱 오류: {e}")
+            logger.error(f"YAML 파싱 오류: {e}")
             metadata = {} # 파싱 실패 시 빈 딕셔너리 반환
     else:
         # 프론트 매터가 없거나 형식이 맞지 않는 경우
@@ -95,17 +106,20 @@ def parse_markdown_with_front_matter(file_path):
 # arrow-left.md 파일 생성 (예시)
 def load_bootstrap_categories():
     icon_infos = defaultdict(list)
+    logger.info('[BI] Reading icon categories & tags')
     path = Path('icons/src/bootstrap-icons/docs/content/icons/')
-    for p in path.glob('*.md'):
+    # pat = 'filetype-*.md'
+    pat = '*.md'
+    for p in path.glob(pat):
         # 파일 파싱 실행
         metadata, body = parse_markdown_with_front_matter(p)
         # {'title': 'Arrow left', 'categories': ['Arrows'], 'tags': ['arrow']}
-        
-        icon_info = IconInfo(icon_path=p)
+        icon_path = Path('icons/src/bootstrap-icons/icons') / p.with_suffix('.svg').name
+        icon_info = IconInfo(icon_path=icon_path)
         cat = metadata.get('categories', [])
-        icon_info.categories = set(cat if cat else [])
+        icon_info.categories = [ s.capitalize() for s in list(set(cat if cat else [])) ]
         tags = metadata.get('tags', [])
-        icon_info.tags = set(tags if tags else [])
+        icon_info.tags = [ s.capitalize() for s in list(set(tags if tags else [])) ]
         title = metadata.get('title', '')
         icon_info.friendly_name = title if title else icon_info.icon_name
         icon_infos[icon_info.icon_name].append(icon_info)
@@ -134,6 +148,7 @@ def load_fontawesome_categories():
     icon_infos = defaultdict(list)
 
     # family, style
+    logger.info('[FA] Reading icon families')
     path = Path('icons/src/fontawesome-free-6.7.2-web/metadata/icon-families.yml')
     with open(path, 'r', encoding='utf-8') as f:
         metadata = yaml.safe_load(f)
@@ -142,12 +157,13 @@ def load_fontawesome_categories():
             icon_paths = get_icon_file_paths(icon_name, 'fa')
             for icon_path in icon_paths:
                 icon_info = IconInfo(icon_path=icon_path)
-                icon_info.tags = set(values['search']['terms'])
+                icon_info.tags = [s.capitalize() for s in set(values['search']['terms'])]
                 icon_info.friendly_name = icon_name
                 icon_info.styles = set(styles)
                 icon_infos[icon_info.icon_name].append(icon_info)
 
     # categories
+    logger.info('[FA] Reading icon categories')
     path = Path('icons/src/fontawesome-free-6.7.2-web/metadata/categories.yml')
     with open(path, 'r') as f:
         metadata = yaml.safe_load(f)
@@ -156,16 +172,17 @@ def load_fontawesome_categories():
                 ii = icon_infos.get(icon_name, None)
                 if ii:
                     for i in ii:
-                        i.categories.add(category)
+                        i.categories.add(category.capitalize())
                 else:
                     icon_paths = get_icon_file_paths(icon_name, 'fa')
                     for icon_path in icon_paths:
                         icon_info = IconInfo(icon_path=icon_path)
-                        icon_info.categories = set([category])
+                        icon_info.categories = [s.capitalize() for s in set([category])]
                         icon_info.friendly_name = icons['label']
                         icon_infos[icon_info.icon_name].append(icon_info)
 
     # tags
+    logger.info('[FA] Reading icon tags')
     path = Path('icons/src/fontawesome-free-6.7.2-web/metadata/icons.yml')
     with open(path, 'r', encoding='utf-8') as f:
         metadata = yaml.safe_load(f)
@@ -173,9 +190,9 @@ def load_fontawesome_categories():
             tags = set(values['search']['terms'])
             try:
                 for ii in icon_infos[icon_name]:
-                    ii.tags = ii.tags.union(tags)
+                    ii.tags = [ s.capitalize() for s in set(ii.tags).union(tags) ]
             except KeyError:
-                print(f"Icon not found: {icon_name}")
+                logger.error(f"Icon not found: {icon_name}")
                 continue
 
     return icon_infos
@@ -185,7 +202,7 @@ if __name__ == "__main__":
     icon_infos = load_bootstrap_categories()
     icon_infos.update(load_fontawesome_categories())
 
-    print(icon_infos['left'])
+    # print(icon_infos['left'])
 
     def icon_info_to_dict(icon_info):
         return {
