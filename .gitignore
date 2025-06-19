@@ -4,8 +4,7 @@ cert/*.crt
 cert/*.csr
 cert/openssl-ip.conf
 .git.backup
-icons/bootstrap-icons-1.9.1
-icons/fontawesome
+icons/bootstrap-icons-1.91.
 icons/fontawesome-free-6.7.2-web
 css/bootstrap
 css/fontawesome
@@ -14,3 +13,6 @@ data/
 venv
 node_modules
 bootstrap-icon-finder-win32-x64/
+icons/bootstrap-icons-1.13.1.zip
+icons/fontawesome-free-6.7.2-desktop.zip
+icons/fontawesome-free-6.7.2-web.zip
